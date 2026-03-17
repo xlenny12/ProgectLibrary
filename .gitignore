@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Environment variables (NEVER commit this!)
+.env
+.env.local
+.env.*.local
+
+# Data storage files
+data/
+*.dat
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.coverage
+.tox/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# OS specific
+.DS_Store
+Thumbs.db

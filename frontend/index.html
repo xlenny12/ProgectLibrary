@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library System</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    button { margin: 4px; padding: 8px 16px; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
+    input { padding: 6px; margin: 4px; width: 260px; }
+    .section { border: 1px solid #ddd; padding: 16px; margin: 16px 0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Library System — Dev UI</h1>
+  <p>Full API available at <a href="/docs">/docs</a> (Swagger UI)</p>
+
+  <div class="section">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email" type="email">
+    <input id="password" placeholder="Password" type="password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div class="section">
+    <h2>Quick actions</h2>
+    <button onclick="get('/api/books')">List books</button>
+    <button onclick="get('/api/users/me')">My profile</button>
+    <button onclick="get('/api/borrows/me')">My borrows</button>
+    <button onclick="get('/api/borrows/overdue')">Overdue (admin/adv)</button>
+    <button onclick="get('/health')">Health check</button>
+  </div>
+
+  <div class="section">
+    <h2>Response</h2>
+    <pre id="output">—</pre>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('token') || '';
+
+    async function login() {
+      const form = new URLSearchParams();
+      form.append('username', document.getElementById('email').value);
+      form.append('password', document.getElementById('password').value);
+      const r = await fetch('/api/auth/login', { method: 'POST', body: form });
+      const data = await r.json();
+      if (data.access_token) {
+        token = data.access_token;
+        localStorage.setItem('token', token);
+        show({ message: 'Logged in', ...data });
+      } else {
+        show(data);
+      }
+    }
+
+    async function get(url) {
+      const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      show(await r.json());
+    }
+
+    function show(data) {
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
