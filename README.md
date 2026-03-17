@@ -1,115 +1,94 @@
-# ProgectLibrary - Library Management System
+# ProgectLibrary - Система управління бібліотекою
 
-A modern, OOP-based library management system built with FastAPI. Features user authentication, book catalog management, borrowing system with availability tracking, overdue notifications, audit logging, and GDPR compliance.
+Сучасна система управління бібліотекою на основі OOP, розроблена на FastAPI. Включає автентифікацію користувачів, управління каталогом книг, систему позичання з відстеженням наявності, сповіщення про прострочення, логування та відповідність GDPR.
 
-##  Table of Contents
+## 📋 Зміст
 
-- [Features](#features)
-- [System Requirements](#system-requirements)
-- [Installation Guide](#installation-guide)
-  - [Step 1: Clone the Repository](#step-1-clone-the-repository)
-  - [Step 2: Set Up Python Virtual Environment](#step-2-set-up-python-virtual-environment)
-  - [Step 3: Install Dependencies](#step-3-install-dependencies)
-  - [Step 4: Configure Environment Variables](#step-4-configure-environment-variables)
-  - [Step 5: Verify Installation](#step-5-verify-installation)
-- [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
-- [How the Project Works](#how-the-project-works)
-- [Where Your Code Goes](#where-your-code-goes)
-- [For Frontend Developers](#for-frontend-developers)
-- [API Documentation](#api-documentation)
-- [Troubleshooting](#troubleshooting)
-
----
-
-## Features
-
-✅ **User Management**
-- User registration and authentication
-- Role-based access control (Admin, Advanced User, Regular User)
-- GDPR-compliant user deletion
-
-✅ **Book Catalog**
-- Add/update/delete books
-- Track total and available quantities
-- Book categorization (Fantasy, Criminal, Drama)
-
-✅ **Borrowing System**
-- Borrow books with configurable periods (1-365 days)
-- Track availability in real-time
-- Return management with automatic quantity restoration
-- Overdue detection and notifications
-
-✅ **Security & Audit**
-- JWT-based authentication (access + refresh tokens)
-- Password hashing with bcrypt
-- Fernet encryption for data files at rest
-- HMAC-signed audit logs for tampering detection
-- Comprehensive audit trail with replay capability
-
-✅ **Notifications**
-- SMS notifications via Twilio (configurable)
-- Email notifications via SMTP (Gmail, custom servers)
-- Automatic overdue reminders (daily at 9 AM)
-
-✅ **Data Persistence**
-- File-based encrypted storage (no database required)
-- Atomic operations with threading locks to prevent race conditions
+- [Можливості](#можливості)
+- [Системні вимоги](#системні-вимоги)
+- [Посібник з установки](#посібник-з-установки)
+  - [Крок 1: Клонування репозиторію](#крок-1-клонування-репозиторію)
+  - [Крок 2: Налаштування віртуального середовища Python](#крок-2-налаштування-віртуального-середовища-python)
+  - [Крок 3: Установка залежностей](#крок-3-установка-залежностей)
+  - [Крок 4: Налаштування змінних середовища](#крок-4-налаштування-змінних-середовища)
+  - [Крок 5: Перевірка установки](#крок-5-перевірка-установки)
+- [Запуск додатку](#запуск-додатку)
+- [Запуск тестів](#запуск-тестів)
+- [Як працює проект](#як-працює-проект)
+- [Де розмістити ваш код](#де-розмістити-ваш-код)
+- [Для розробників фронтенду](#для-розробників-фронтенду)
+- [Документація API](#документація-api)
+- [Розв'язування проблем](#розвязування-проблем)
 
 ---
 
-## System Requirements
+## Можливості
 
-### Windows & Mac
-- **Python**: 3.11 or higher
-- **Git**: For cloning the repository
-- **Disk Space**: ~1 GB (including virtual environment)
-- **RAM**: 512 MB minimum
+ **Управління користувачами**
+- Реєстрація та автентифікація користувачів
+- Контроль доступу на основі ролей (Admin, Advanced User, User)
+- GDPR-сумісне видалення облікових записів
 
-### Check Your Python Version
+ **Каталог книг**
+- Додавання, оновлення та видалення книг
+- Відстеження загальної та доступної кількості
+- Категоризація книг (наприклад, за жанрами)
 
-**Windows (PowerShell):**
-```powershell
-python --version
-```
+ **Система позичання**
+- Позичання книг на конкретний період часу
+- Відстеження наявності в реальному часі
+- Управління поверненням з автоматичним поновленням кількості
+- Визначення та сповіщення про прострочення
 
-**Mac (Terminal):**
-```bash
-python3 --version
-```
+ **Безпека та аудит**
+- JWT-аутентифікація (токени доступу та оновлення)
+- Хешування паролів за допомогою bcrypt
+- Шифрування Fernet для файлів даних
+- Підписані аудит-логи HMAC для виявлення підробок
+- Комплексний журнал аудиту з можливістю відтворення
+
+ **Сповіщення**
+- SMS сповіщення через Twilio (налаштовується) - можливо пропустимо і зупинимось лише на email
+- Email сповіщення через SMTP (Gmail, користувацькі сервери)
+- Автоматичні сповіщення про прострочення (наприклад, щодня о 9:00)
+
+ **Збереження даних**
+- Зашифроване файлове сховище (база даних не потрібна)
+- Операції з блокуванням потоків для запобігання конфліктів
+
 
 ---
 
-## Installation Guide
+## Як почати роботу
+(Інструкції для mac теж прописані, але ще не перевірялись, тобто щось може не працювати як треба. В такому випадку можете спробувати вирішити проблему самостійно або зверніться до TechLead і проведіть траблшутінг разом.)
 
-### Step 1: Clone the Repository
-
-**All OS (Windows PowerShell, Mac Terminal):**
-```bash
-git clone https://github.com/your-username/ProgectLibrary.git
-cd ProgectLibrary
-```
+### Крок 1: Клонування репозиторію - мали би всі вже зробити взагалі-то
 
 ---
 
-### Step 2: Set Up Python Virtual Environment
+### Крок 2: Налаштування віртуального середовища Python
 
-A virtual environment isolates this project's dependencies from your system Python.
+Віртуальне середовище ізолює залежності цього проекту від системного Python.
 
 #### **Windows (PowerShell):**
+Можна працювати у вбудованому терміналі VSCode або іншрго IDE.
 
 ```powershell
-# Create virtual environment
+# Створити віртуальне середовище
 python -m venv venv
 
-# Activate it
+# Активувати його
 .\venv\Scripts\Activate.ps1
+#aбо
+.\venv\Scripts\activate
 
-# If you get an execution policy error, run this first:
+# Якщо помилка політики виконання, запустіть спершу:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Це запустить powershell з правами адміністратора
+
 ```
 
-**✅ Success**: Your prompt will show `(venv)` at the beginning, like:
+**Якщо все вийшло**: Ваш запрос(?) буде починатись з `(venv)`, як:
 ```
 (venv) PS C:\Users\YourName\ProgectLibrary>
 ```
@@ -117,632 +96,336 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 #### **Mac (Terminal):**
 
 ```bash
-# Create virtual environment
+# Створити віртуальне середовище
 python3 -m venv venv
 
-# Activate it
+# Активувати його
 source venv/bin/activate
 ```
 
-**✅ Success**: Your prompt will show `(venv)` at the beginning, like:
+**Якщо все вийшло**: Ваш запрос буде починатись з `(venv)`, як от:
 ```
 (venv) your-machine:ProgectLibrary yourname$
 ```
 
 ---
 
-### Step 3: Install Dependencies
+### Крок 3: Dependencies
 
-With the virtual environment activated, install all required packages:
+З активованим віртуальним середовищем встановіть усі необхідні пакети:
 
-**Windows & Mac (same command):**
+**Windows та Mac (одна команда):**
 ```bash
 pip install -r requirements.txt
 ```
 
-⏳ This takes 2-3 minutes. You'll see `Successfully installed` message at the end with 30+ packages.
+⏳ Це займає 2-3 хвилини. На кінець з'явиться повідомлення `Successfully installed` з 30+ пакетів.
 
 ---
 
-### Step 4: Configure Environment Variables
+### Крок 4: Налаштування змінних середовища
 
-Create a `.env` file in the project root with required configuration.
+Створіть файл `.env` в root-і проекту. (головна папка, де знаходяться app, data, etc.)
+Можете скопіювати туди вміст .env.example 
 
-#### **Windows (PowerShell):**
+#### **Генерування ключів шифрування**
 
-```powershell
-# Create the .env file
-New-Item -Path .env -ItemType File
+Вам потрібно згенерувати ключі SECRET_KEY, FERNET_KEY, AUDIT_HMAC_KEY (Решту лишіть як є, поки не треба нічого). Запустіть скрипт генерування ключів:
 
-# Edit it (opens in Notepad)
-notepad .env
-```
-
-#### **Mac (Terminal):**
-
-```bash
-# Create and edit the .env file
-nano .env
-```
-Press `Ctrl+O`, then `Enter` to save, then `Ctrl+X` to exit nano.
-
-#### **Contents of `.env` file:**
-
-Copy and paste the following, then follow the key generation steps below:
-
-```ini
-# ════════════════════════════════════════════════════════════════
-# CRITICAL: Must be configured before first run
-# ════════════════════════════════════════════════════════════════
-
-# JWT Secret for access/refresh tokens
-SECRET_KEY=your-super-secret-key-min-32-chars-long-please
-
-# Generate these using the script below
-FERNET_KEY=
-AUDIT_HMAC_KEY=
-
-# Application Environment
-APP_ENV=development
-LOG_LEVEL=INFO
-
-# ════════════════════════════════════════════════════════════════
-# OPTIONAL: Notifications (leave blank for development)
-# ════════════════════════════════════════════════════════════════
-
-# SMS via Twilio (intentionally left for production setup)
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_FROM_NUMBER=
-
-# Email via SMTP (Gmail shown as example)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASSWORD=
-
-# ════════════════════════════════════════════════════════════════
-# OPTIONAL: Storage (default should work fine)
-# ════════════════════════════════════════════════════════════════
-
-DATA_DIR=./data
-```
-
-#### **Generate Encryption Keys**
-
-You need to generate `FERNET_KEY` and `AUDIT_HMAC_KEY`. Run the key generation script:
-
-**Windows & Mac:**
+**Windows та Mac:**
 ```bash
 python scripts/generate_keys.py
 ```
 
-This outputs two keys. Copy them into your `.env` file:
-```
-FERNET_KEY=gAAAAABlFxxx...xxxx
-AUDIT_HMAC_KEY=gAAAAABlFyyy...yyyy
-```
+Це виведе ключі. Скопіюйте їх у файл `.env`
+---
 
-#### **Set a Strong SECRET_KEY**
+### Крок 5: Перевірка установки
 
-The `SECRET_KEY` is used for JWT signing. Create a strong string:
+Перевірте, що все працює:
 
-**Option 1 - Using Python (all OS):**
+**Windows та Mac (одна команда, venv все ще активна):**
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
+python -c "from app.main import app; print(' Додаток успішно імпортується')"
 ```
 
-Copy the output into `SECRET_KEY=` in `.env`.
-
-**Option 2 - Manual (any OS):**
-Use any string with 32+ random characters:
+Очікуваний результат:
 ```
-SECRET_KEY=MyL0ng_RandomK3y_At_L3ast_32_Chars_0912837465
+ Додаток успішно імпортується
 ```
 
 ---
 
-### Step 5: Verify Installation
+## Запуск додатку
 
-Test that everything works:
+Запустіть сервер:
 
-**Windows & Mac (same command, venv still active):**
-```bash
-python -c "from app.main import app; print('✅ Application imports successfully')"
-```
-
-Expected output:
-```
-✅ Application imports successfully
-```
-
----
-
-## Running the Application
-
-Once installation is complete, start the development server:
-
-**Windows & Mac:**
+**Windows та Mac:**
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Expected output:
+Очікуваний результат:
 ```
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete
 ```
 
-### Access the API
+### Доступ до API
 
-- **Interactive Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Alternative Docs**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- **Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
+- **Інтерактивні документи**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Альтернативні документи**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Перевірка "здоров'я" - типу статус?**: [http://localhost:8000/health](http://localhost:8000/health)
 
-### Stop the Server
+### Зупинення сервера
 
-Press `Ctrl+C` in the terminal.
+Натисніть `Ctrl+C` в терміналі.
 
 ---
 
-## Running Tests
+## Запуск тестів
 
-The project includes comprehensive tests using pytest.
+Проект включає комплексні тести з використанням pytest.
 
-**Windows & Mac (venv active):**
+**Windows та Mac (venv активна):**
 ```bash
-# Run all tests
+# Запустити всі тести
 pytest
 
-# Run with coverage report
+# Запустити з звітом про покриття
 pytest --cov=app --cov-report=html --cov-report=term
 
-# Run specific test file
+# Запустити конкретний файл тестів
 pytest tests/test_auth_router.py -v
 
-# Run tests matching a pattern
+# Запустити тести за шаблоном
 pytest -k "book" -v
 ```
 
-Test results are displayed in terminal. Coverage report generates HTML in `htmlcov/` directory.
+Результати тестів відображаються в терміналі. Звіт про покриття генерує HTML у каталозі `htmlcov/`.
 
 ---
 
-## How the Project Works
+## Як працює проект
 
-### The Basic Idea
+### Основна ідея [Згенерована штука, я ніби переписала, але може бути криво]
 
-This is a **backend API** (a service that handles data). Think of it like a restaurant:
+Це **API бекенду** (сервіс, який обробляє дані). Уявіть це як ресторан:
 
-- **Frontend** = Customer interface (what users see and click on)
-- **API** = The kitchen (processes requests, returns data)
-- **Database** = The storage (where ingredients/data live)
+- **Фронтенд** = Інтерфейс для клієнтів (що користувачі бачать та клацають)
+- **API** = Кухня (обробляє вимоги, повертає дані)
+- **Сховище даних** = Склад (де живуть інгредієнти/дані)
 
-Your frontend sends **requests** to the backend (like "give me all books"). The backend processes the request, reads/writes data, and sends back a **response** (like "here are the books").
+Ваш фронтенд надсилає **запити (request)** на бекенд (як "дайте мені всі книги"). Бекенд обробляє запит, читає/пише дані та надсилає назад **відповідь (response)** (як "ось книги").
 
-### How Code Moves Through the System
+### Як код проходить через систему
 
 ```
-Frontend (HTML/JavaScript)
-    ↓ asks for data (HTTP request)
+Фронтенд (HTML/JavaScript)
+    ↓ запитує дані (HTTP запит)
     ↓
-Routers (app/routers/*.py) 
-    "Which endpoint was called? /api/books?"
+Маршрутизатори (app/routers/*.py) 
+    "Яку кінцеву точку викликаємо? /api/books?"
     ↓
-Services (app/services/*.py)
-    "What should I do? Find books and return them"
+Сервіси (app/services/*.py)
+    "Що я маю зробити? Знайти книги та повернути їх"
     ↓
-Repositories (app/repositories/*.py)
-    "Go read the data from storage"
+Репозиторії (app/repositories/*.py)
+    "Прочитайте дані зі сховища"
     ↓
-Models (app/models/*.py)
-    "Shape the data into the right format"
+Моделі (app/models/*.py)
+    "Оформіть дані в правильний формат"
     ↓
-API Response (back to frontend)
-    ← returns JSON data (like: [{"id": "123", "title": "Harry Potter"}])
+Відповідь API (назад фронтенду)
+    ← повертає JSON дані (як: [{"id": "123", "title": "Гарі Поттер"}])
 ```
 
-### Real Example: Borrowing a Book
+### Реальний приклад: Позичання книги
 
-1. **Frontend** - User clicks "Borrow Book" button  
-   → Sends request: `POST /api/borrows {"book_id": "123", "days": 14}`
+1. **Фронтенд** - Користувач клацає кнопку "Позичити книгу"  
+   → Надсилає запит: `POST /api/borrows {"book_id": "123", "days": 14}`
 
-2. **Router** (`app/routers/borrows.py`) - Receives the request  
-   → Calls the BorrowService to handle the logic
+2. **Маршрутизатор** (`app/routers/borrows.py`) - Отримує запит  
+   → Викликає BorrowService для обробки логіки
 
-3. **Service** (`app/services/borrow_service.py`) - Decides what to do  
-   → "Is the book available? If yes, reduce the count and save the borrow"  
-   → Calls repositories to read/write data
+3. **Сервіс** (`app/services/borrow_service.py`) - Визначає, що робити  
+   → "Чи доступна книга? Якщо так, зменшіть кількість та збережіть позичання"  
+   → Викликає репозиторії для читання/запису даних
 
-4. **Repositories** (`app/repositories/`) - Get/save actual data  
-   → `BookRepository.find_by_id()` - Find the book  
-   → `BorrowRepository.save()` - Save the borrow record
+4. **Репозиторії** (`app/repositories/`) - Отримують/зберігають фактичні дані  
+   → `BookRepository.find_by_id()` - Знайти книгу  
+   → `BorrowRepository.save()` - Зберегти запис позичання
 
-5. **Response** - Sent back to frontend  
+5. **Відповідь** - Відправляється назад фронтенду  
    → `{"id": "borrow-456", "book_id": "123", "date_taken": "2026-03-17", "days": 14}`
 
-The frontend then shows "Book borrowed successfully!" to the user.
+Фронтенд потім показує "Книга успішно позичена!" користувачу.
 
 ---
 
-## Where Your Code Goes
+## Де "пишеться код"
 
-As a **backend developer**, you'll mostly work in these folders:
+Якщо ви **розробник бекенду**, ви будете в основному працювати в цих папках:
 
-### 🔴 **If adding a NEW FEATURE** (e.g., "Add book reviews")
+### 🔴 **Якщо додаєте НОВИЙ ФУНКЦІОНАЛ** (наприклад, "Додати рецензії на книги")
 
-| What | Where | Example |
+| Що | Де | Приклад |
 |------|-------|---------|
-| **Data structure** (what fields?) | `app/models/` | Create `app/models/review.py` with ReviewCreate, ReviewInDB |
-| **Business logic** (what happens?) | `app/services/` | Create `app/services/review_service.py` with add/delete review |
-| **Storage** (how to save?) | `app/repositories/` | Create `app/repositories/review_repo.py` |
-| **API endpoints** (what URLs?) | `app/routers/` | Create `app/routers/reviews.py` with POST, GET, DELETE |
-| **Security** (who can do it?) | `app/dependencies.py` | Add role checks if needed |
-| **Tests** (does it work?) | `tests/` | Create `tests/test_review_service.py` |
+| **Структура даних** (які поля?) | `app/models/` | Створіть `app/models/review.py` з ReviewCreate, ReviewInDB |
+| **Бізнес-логіка** (що відбувається?) | `app/services/` | Створіть `app/services/review_service.py` з add/delete review |
+| **Сховище** (як зберігати?) | `app/repositories/` | Створіть `app/repositories/review_repo.py` |
+| **API кінцеві точки** (які URL?) | `app/routers/` | Створіть `app/routers/reviews.py` з POST, GET, DELETE |
+| **Безпека** (хто може це робити?) | `app/dependencies.py` | Додайте перевірки ролей, якщо потрібно |
+| **Тести** (це працює?) | `tests/` | Створіть `tests/test_review_service.py` |
 
-**Do NOT modify:**
-- `app/main.py` (unless adding new routers)
-- `app/core/` (unless fixing bugs)
-- `requirements.txt` (unless adding dependencies)
+**НЕ змінюйте:**
+- `app/main.py` (якщо не додаєте нові routers)
+- `app/core/` (якщо не фіксите баги)
+- `requirements.txt` (якщо не додаєте dependencies)
 
-### 🟡 **If modifying EXISTING code**
+### 🟡 **Якщо змінюєте ІСНУЮЧИЙ код**
 
-Just edit the relevant `app/services/` or `app/repositories/` file. The routers will automatically use the updated code.
+Просто відредагуйте відповідне `app/services/` або `app/repositories/` файлу. Маршрутизатори автоматично використовуватимуть оновлений код.
 
-**Example:** To make book borrowing stricter:
-1. Edit `app/services/borrow_service.py` - Change the validation logic
-2. That's it! No other changes needed.
+**Приклад:** Щоб зробити позичання книги суворішим:
+1. Відредагуйте `app/services/borrow_service.py` - Змініть логіку валідації
+2. Це все! Інші зміни не потрібні.
 
 ---
 
-## For Frontend Developers
+## Для розробників фронтенду
 
-### What You Need to Know
+### Як фронтенд підключається до бекенду
 
-**The backend is already built.** Your job is to create a nice interface (HTML/CSS/JavaScript) that uses it.
+Ваша HTML-форма надсилає **HTTP запити** бекенд API. Бекенд відповідає **JSON даними**.
 
-### How Frontend Connects to Backend
+### Swagger UI 
 
-Your HTML form sends **HTTP requests** to the backend API. The backend responds with **JSON data**.
+Коли бекенд запущений, він автоматично генерує **інтерактивну документацію API** за адресою **[http://localhost:8000/docs](http://localhost:8000/docs)**.
 
-#### Example: Login Form (HTML)
+**Swagger UI показує:**
+- Усі доступні кінцеві точки (URL)
+- Які дані потребує кожна кінцева точка
+- Які дані вона повертає
+- Кнопку "Try It Out" для тестування кінцевих точок
 
-```html
-<form id="loginForm">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button type="submit">Login</button>
-</form>
+**Вам не потрібно його використовувати для фронтенду**, але це корисно розуміти, які дані очікує бекенд.
 
-<script>
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    
-    // Send request to backend
-    const response = await fetch("http://localhost:8000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        username: email,  // "username" field expected by backend
-        password: password
-      })
-    });
-    
-    const data = await response.json();
-    // data contains: {access_token: "...", refresh_token: "...", token_type: "bearer"}
-    
-    // Save token for future requests
-    localStorage.setItem("access_token", data.access_token);
-    
-    console.log("Login successful!");
-  });
-</script>
-```
 
-### Swagger UI - What It Is
+### Де пишеться код фронтенду
 
-When the backend runs, it automatically generates **interactive API documentation** at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
+Відредагуйте файли в `frontend/`:
+- `frontend/index.html` - Ваш макет основної сторінки
+- `frontend/style.css` - Ваші стилі (створіть, якщо потрібно)
+- інші файли які вам треба
 
-**Swagger UI shows:**
-- All available endpoints (URLs)
-- What data each endpoint needs
-- What data it returns
-- A "Try It Out" button to test endpoints
+Замініть плейсхолдер HTML на свій код.
 
-**You don't need to use it for your frontend**, but it's useful to understand what data the backend expects.
+### Поширені кінцеві точки (Для фронтенду)
 
-### How to Test Your Frontend
-
-**Backend running:**
-```bash
-uvicorn app.main:app --reload
-```
-
-**Frontend running:**
-```bash
-# Simple approach: open your HTML file in browser
-# Open frontend/index.html directly in your browser
-# (or use a simple Python server)
-```
-
-**Testing in browser console:**
-```javascript
-// Test if backend is running
-fetch("http://localhost:8000/health")
-  .then(r => r.json())
-  .then(data => console.log("Backend status:", data))
-  .catch(e => console.log("Backend not running:", e));
-```
-
-### Where to Put Your Frontend Code
-
-Edit the files in `frontend/`:
-- `frontend/index.html` - Your main page layout
-- `frontend/style.css` - Your styles (create if needed)
-- `frontend/script.js` - Your JavaScript (create if needed)
-
-Replace the placeholder HTML with your own code.
-
-### Common Endpoints (For Frontend)
-
-| What | Method | URL | Notes |
+| Що | Метод | URL | Примітки |
 |------|--------|-----|-------|
-| **Register** | POST | `/api/auth/register` | Send: full_name, email, phone, date_of_birth, address, password |
-| **Login** | POST | `/api/auth/login` | Send: username (email), password. Get: access_token |
-| **Get books** | GET | `/api/books` | Requires: access_token header, returns list of books |
-| **Borrow book** | POST | `/api/borrows` | Send: book_id, days, quantity. Returns: borrow record |
-| **Return book** | POST | `/api/borrows/{borrow_id}/return` | Returns: updated borrow record |
-| **Get my borrows** | GET | `/api/borrows/me` | Returns: list of your borrows |
+| **Реєстрація** | POST | `/api/auth/register` | Надіслати: full_name, email, phone, date_of_birth, address, password |
+| **Вхід** | POST | `/api/auth/login` | Надіслати: username (email), password. Отримати: access_token |
+| **Отримати книги** | GET | `/api/books` | Потребує: access_token в заголовку, повертає список книг |
+| **Позичити книгу** | POST | `/api/borrows` | Надіслати: book_id, days, quantity. Повертає: запис позичання |
+| **Повернути книгу** | POST | `/api/borrows/{borrow_id}/return` | Повертає: оновлений запис позичання |
+| **Отримати мої позичання** | GET | `/api/borrows/me` | Повертає: список ваших позичань |
 
-### Example: Get All Books (HTML)
-
-```html
-<button id="refreshBooks">Load Books</button>
-<ul id="bookList"></ul>
-
-<script>
-  async function loadBooks() {
-    const token = localStorage.getItem("access_token");
-    
-    const response = await fetch("http://localhost:8000/api/books", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    
-    const books = await response.json();
-    
-    const list = document.getElementById("bookList");
-    list.innerHTML = books.map(book => 
-      `<li>${book.title} by ${book.author}`
-    ).join("");
-  }
-  
-  document.getElementById("refreshBooks").addEventListener("click", loadBooks);
-</script>
-```
-
-### CORS (Cross-Origin) - Already Set Up
-
-The backend is configured to accept requests from your frontend. Don't worry about CORS errors—they're already handled.
 
 ---
 
-## Project Files - Quick Reference
+## Файли проекту 
 
-| File/Folder | What It Does | Who Uses It |
+| Файл/Папка | Що робить | Хто використовує |
 |-------------|------------|-----------|
-| `app/main.py` | Starts the backend, combines all parts | Backend devs (read only) |
-| `app/models/` | Defines data shapes (like database schemas) | Backend devs (edit to add features) |
-| `app/services/` | Business logic ("if available < quantity, reject") | Backend devs (edit for logic changes) |
-| `app/repositories/` | Read/write from storage files | Backend devs (usually don't edit) |
-| `app/routers/` | API endpoints (URLs users call) | Backend devs (edit to add endpoints) |
-| `app/core/` | Security, encryption, logging | Backend devs (don't touch unless bug fix) |
-| `tests/` | Automated tests (make sure code works) | Backend devs |
-| `frontend/` | HTML, CSS, JavaScript | Frontend devs |
-| `requirements.txt` | List of libraries needed | Everyone (used by pip install) |
-| `.env` | Secret keys and settings | Created locally (don't commit) |
-| `scripts/` | One-time setup scripts | Run once by everyone |
-| `data/` | Where encrypted data is stored | Auto-created (don't edit manually) |
+| `app/main.py` | Запускає бекенд, комбінує усе | бекенд (тільки читання) |
+| `app/models/` | Визначає форми даних (як схеми баз даних) | бекенд (редагувати для додавання функцій) |
+| `app/services/` | Бізнес-логіка ("якщо доступне < кількість, відхилити") | бекенд (редагувати для змін логіки) |
+| `app/repositories/` | Читає/записує файли сховища | бекенд (зазвичай не редагувати) |
+| `app/routers/` | API кінцеві точки (URL, які викликають користувачі) | бекенд (редагувати для додавання кінцевих точок) |
+| `app/core/` | Безпека, шифрування, логування | бекенд (не чіпайте, якщо працює) |
+| `tests/` | Автоматичні тести (переконатися, що код працює) | бекенд |
+| `frontend/` | HTML, CSS, etc. |  фронтенд |
+| `requirements.txt` | Список необхідних бібліотек | Усі (використовується pip install) |
+| `.env` | Секретні ключі та параметри | Створено локально (НЕ КОМІТИТИ) |
+| `scripts/` | Скрипти одноразової установки | Кожен запускає один раз |
+| `data/` | Де зберігаються зашифровані дані | Автоматично створюється (не редагувати вручну) |
 
 ---
 
-## Swagger UI & API Docs
+## Swagger UI та документація API
 
-### What is Swagger?
+Swagger (тепер називається "OpenAPI") - це **автоматично генерована документація** для вашого API бекенду.
 
-Swagger (now called "OpenAPI") is **auto-generated documentation** for your backend API.
+Коли ви запускаєте бекенд, FastAPI автоматично створює:
+- **Swagger UI** на [http://localhost:8000/docs](http://localhost:8000/docs) (інтерактивний, красивіший)
+- **ReDoc** на [http://localhost:8000/redoc](http://localhost:8000/redoc) (альтернативна документація)
 
-When you run the backend, FastAPI automatically creates:
-- **Swagger UI** at [http://localhost:8000/docs](http://localhost:8000/docs) (interactive, prettier)
-- **ReDoc** at [http://localhost:8000/redoc](http://localhost:8000/redoc) (alternative documentation)
+### Чому це корисно
 
-### Why It's Useful
+**Для тестування кінцевих точок:**
+1. Перейдіть на [http://localhost:8000/docs](http://localhost:8000/docs)
+2. Клацніть на кінцеву точку (наприклад, `POST /api/books`)
+3. Клацніть "Try It Out"
+4. Введіть дані
+5. Клацніть "Execute"
+6. Див. Відповідь
 
-**For testing endpoints:**
-1. Go to [http://localhost:8000/docs](http://localhost:8000/docs)
-2. Click on an endpoint (e.g., `POST /api/books`)
-3. Click "Try It Out"
-4. Enter data
-5. Click "Execute"
-6. See the response
+**Для розуміння API:**
+- Що потребує кожна кінцева точка як вхід
+- Що вона повертає
+- Коди помилок
 
-**For understanding the API:**
-- See what each endpoint needs as input
-- See what it returns
-- See error codes
-
-**Note:** Your frontend doesn't use Swagger—it uses `fetch()` to call the API. Swagger is just for humans to understand/test.
+**Примітка:** Ваш фронтенд не використовує Swagger — він використовує `fetch()` для викликання API. Swagger просто для людей, щоб зрозуміти/тестувати.
 
 ---
 
-## Troubleshooting
+## Траблшутінг
 
-###  "python/python3" command not found
 
-**Windows:**
-- Python not installed? Download from [python.org](https://www.python.org) (check "Add Python to PATH")
-- Restart PowerShell after install
+### Помилка "Module not found" (наприклад, "No module named 'fastapi'")
 
-**Mac:**
-- Install Homebrew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-- Then: `brew install python3`
+Віртуальне середовище не активна. Запустіть команду активації.
 
-### ❌ "(venv) not showing in terminal"
+### "FERNET_KEY is not set in environment"
 
-Virtual environment not activated.
-
-**Windows PowerShell:**
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-**Mac Terminal:**
-```bash
-source venv/bin/activate
-```
-
-### ❌ "Module not found" error (e.g., "No module named 'fastapi'")
-
-Virtual environment not active. Run activation command from Step 2 again.
-
-### ❌ "FERNET_KEY is not set in environment"
-
-Missing encryption key in `.env`. Run:
+Відсутній ключ шифрування в `.env`. Запустіть:
 ```bash
 python scripts/generate_keys.py
 ```
 
-Copy output to `.env` file.
+Скопіюйте результат у файл `.env`.
 
-### ❌ Port 8000 already in use
+### Порт 8000 уже використовується
 
-Another app is using port 8000. Either:
+Інший додаток використовує порт 8000. Або:
 
-**Option 1:** Stop the other app
+**Варіант 1:** Зупиніть інший додаток
 
-**Option 2:** Use a different port
+**Варіант 2:** Використовуйте інший порт
 ```bash
 uvicorn app.main:app --reload --port 8001
 ```
 
-Then access at `http://localhost:8001/docs`
+Потім отримайте доступ на `http://localhost:8001/docs`
 
-### ❌ Permission denied error in PowerShell
+### Permission denied error в PowerShell
 
-Windows execution policy blocking scripts.
+Windows execution policy блокує скрипти.
 
-**Windows PowerShell (Admin):**
+**Windows PowerShell (Адміністратор):**
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-# Then answer 'Y' or 'A' when prompted
+# Дайте відповідь 'Y' або 'A' на запит
 ```
 
-### ❌ Tests fail with "Decryption failed"
+### Mac: "zsh: command not found: python"
 
-Data files corrupted or keys changed. Safe to delete:
-```bash
-rm -r data/  # or delete 'data' folder in File Explorer
-```
-
-Tests will create fresh data files.
-
-### ❌ Mac only: "zsh: command not found: python"
-
-Use `python3` instead of `python`:
+Використовуйте `python3` замість `python`:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-Update commands to use `python3` and `pip3`.
-
----
-
-## Development Notes
-
-### Creating an Admin User
-
-Run the seed script to create an initial admin account:
-
-**Windows & Mac:**
-```bash
-python scripts/seed_admin.py
-```
-
-Credentials printed to console. Change password immediately via API.
-
-### Deactivating the Virtual Environment
-
-When done working:
-
-**Windows:**
-```powershell
-deactivate
-```
-
-**Mac:**
-```bash
-deactivate
-```
-
-### Git Best Practices
-
-Never commit:
-- `.env` files (add to `.gitignore`)
-- `venv/` directories
-- `data/` directories
-- `htmlcov/` directories
-- `__pycache__/` directories
-
-These are already in `.gitignore`.
-
-Do commit:
-- `.gitignore`
-- `requirements.txt`
-- All source code in `app/`, `tests/`, `scripts/`
-- `README.md` and `pyproject.toml`
-
----
-
-## Performance Notes
-
-### File-Based Storage Limitations
-
-This system uses encrypted file storage instead of a database. It's suitable for:
-- ✅ Development and testing
-- ✅ Small libraries (<10k books, <1k users)
-- ✅ Learning OOP & API design
-
-For production with high load:
-- 🔄 Migrate to PostgreSQL or similar
-- 🔄 Add database transaction support
-- 🔄 Replace file locking with proper database locks
-- 🔄 Add caching layer (Redis)
-
-### Encryption Performance
-
-Every file read/write is encrypted with Fernet (AES-128). This adds ~1-5ms overhead per operation. For the current use case, this is negligible.
-
----
-
-## Support & Contributing
-
-For issues or questions:
-1. Check [Troubleshooting](#troubleshooting) section
-2. Check [CONTRIBUTING.md](CONTRIBUTING.md) for code standards
-3. Check FastAPI docs: [fastapi.tiangolo.com](https://fastapi.tiangolo.com)
-4. Check Pydantic docs: [docs.pydantic.dev](https://docs.pydantic.dev)
-
----
-
-## License
-
-[Specify your license here]
-
----
-
-**Status**: This is a learning project. It's fully functional for development, testing, and education. The file-based storage is suitable for learning OOP and API design.
-
-**Last Updated**: March 2026
+Оновіть команди для використання `python3` та `pip3`.
