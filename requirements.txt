@@ -1,31 +1,31 @@
 # Core Framework
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
+fastapi==0.135.0
+uvicorn[standard]==0.42.0
 
 # Data Validation & Configuration
-pydantic==2.6.1
-pydantic-settings==2.1.0
-email-validator==2.1.0
+pydantic==2.12.5
+pydantic-settings==2.13.1
+email-validator==2.3.0
 
 # Authentication & Security
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
-bcrypt==4.1.1
-cryptography==41.0.7
-PyJWT==2.8.1
-python-multipart==0.0.6
+bcrypt==4.0.1
+cryptography==46.0.5
+PyJWT==2.12.1
+python-multipart==0.0.22
 
 # Background Tasks & Scheduling
-apscheduler==3.10.4
+apscheduler==3.11.12
 
 # Notifications
-twilio==8.13.0
+twilio==9.10.3
 
 # Testing & Coverage
-pytest==7.4.3
-pytest-asyncio==0.23.2
-pytest-cov==4.1.0
-coverage==7.4.1
+pytest==9.0.2
+pytest-asyncio==1.3.0
+pytest-cov==7.0.0
+coverage==7.13.4
 
 # Environment Configuration
-python-dotenv==1.0.0
+python-dotenv==1.2.2
