@@ -1,67 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Library System</title>
-  <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
-    button { margin: 4px; padding: 8px 16px; cursor: pointer; }
-    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
-    input { padding: 6px; margin: 4px; width: 260px; }
-    .section { border: 1px solid #ddd; padding: 16px; margin: 16px 0; border-radius: 8px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Readly — Your Literary World</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Library System — Dev UI</h1>
-  <p>Full API available at <a href="/docs">/docs</a> (Swagger UI)</p>
 
-  <div class="section">
-    <h2>Login</h2>
-    <input id="email" placeholder="Email" type="email">
-    <input id="password" placeholder="Password" type="password">
-    <button onclick="login()">Login</button>
+  <nav>
+    <a class="nav-logo" href="#">Readly</a>
+    <ul class="nav-links">
+      <li><a href="#books">Browse</a></li>
+      <li><a href="#categories">Categories</a></li>
+      <li><a href="#">New Arrivals</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <button class="nav-cta" onclick="openModal('login')">Sign In</button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-text">
+      <span class="hero-eyebrow">✦ Your next great read awaits</span>
+      <h1>Discover <em>stories</em> that move you</h1>
+      <p class="hero-sub">Folio is your curated literary companion — explore thousands of titles across every genre, from timeless classics to today's bestsellers.</p>
+      <div class="hero-actions">
+        <a href="#books" class="btn-primary">Browse Books →</a>
+        <button class="btn-secondary" onclick="openModal('signup')">Create Account</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-book hb1"></div>
+      <div class="hero-book hb2"></div>
+      <div class="hero-book hb3"></div>
+      <div class="hero-book hb4"></div>
+    </div>
+  </section>
+
+  <div class="stats-section">
+    <div><div class="stat-num">24,000+</div><div class="stat-label">Books available</div></div>
+    <div><div class="stat-num">140+</div><div class="stat-label">Genres & categories</div></div>
+    <div><div class="stat-num">98k</div><div class="stat-label">Happy readers</div></div>
+    <div><div class="stat-num">4.9 ★</div><div class="stat-label">Average rating</div></div>
   </div>
 
-  <div class="section">
-    <h2>Quick actions</h2>
-    <button onclick="get('/api/books')">List books</button>
-    <button onclick="get('/api/users/me')">My profile</button>
-    <button onclick="get('/api/borrows/me')">My borrows</button>
-    <button onclick="get('/api/borrows/overdue')">Overdue (admin/adv)</button>
-    <button onclick="get('/health')">Health check</button>
-  </div>
+  <section class="books-section" id="books">
+    <div class="section-label">Featured picks</div>
+    <div class="section-title">Books you'll love</div>
+    <div class="books-grid">
+      <div class="book-card"><div class="book-cover bc1"><span class="book-cover-title">The Midnight Library</span></div><div class="book-title">The Midnight Library</div><div class="book-author">Matt Haig</div><div class="book-stars">★★★★★</div><div class="book-price">$14.99</div></div>
+      <div class="book-card"><div class="book-cover bc2"><span class="book-cover-title">Lessons in Chemistry</span></div><div class="book-title">Lessons in Chemistry</div><div class="book-author">Bonnie Garmus</div><div class="book-stars">★★★★★</div><div class="book-price">$16.99</div></div>
+      <div class="book-card"><div class="book-cover bc3"><span class="book-cover-title">Tomorrow, and Tomorrow</span></div><div class="book-title">Tomorrow, and Tomorrow</div><div class="book-author">Gabrielle Zevin</div><div class="book-stars">★★★★☆</div><div class="book-price">$13.99</div></div>
+      <div class="book-card"><div class="book-cover bc4"><span class="book-cover-title">Fourth Wing</span></div><div class="book-title">Fourth Wing</div><div class="book-author">Rebecca Yarros</div><div class="book-stars">★★★★★</div><div class="book-price">$18.99</div></div>
+      <div class="book-card"><div class="book-cover bc5"><span class="book-cover-title">Demon Copperhead</span></div><div class="book-title">Demon Copperhead</div><div class="book-author">Barbara Kingsolver</div><div class="book-stars">★★★★★</div><div class="book-price">$15.99</div></div>
+      <div class="book-card"><div class="book-cover bc6"><span class="book-cover-title">Happy Place</span></div><div class="book-title">Happy Place</div><div class="book-author">Emily Henry</div><div class="book-stars">★★★★☆</div><div class="book-price">$12.99</div></div>
+    </div>
+  </section>
 
-  <div class="section">
-    <h2>Response</h2>
-    <pre id="output">—</pre>
+  <section class="categories-section" id="categories">
+    <div class="section-label">Explore by genre</div>
+    <div class="section-title">What are you in the mood for?</div>
+    <div class="cats-grid">
+      <div class="cat-pill"><div class="cat-icon">🔮</div><div class="cat-name">Fantasy</div></div>
+      <div class="cat-pill"><div class="cat-icon">🔬</div><div class="cat-name">Sci-Fi</div></div>
+      <div class="cat-pill"><div class="cat-icon">💘</div><div class="cat-name">Romance</div></div>
+      <div class="cat-pill"><div class="cat-icon">🔍</div><div class="cat-name">Mystery</div></div>
+      <div class="cat-pill"><div class="cat-icon">📖</div><div class="cat-name">Literary</div></div>
+      <div class="cat-pill"><div class="cat-icon">🌿</div><div class="cat-name">Non-fiction</div></div>
+      <div class="cat-pill"><div class="cat-icon">👶</div><div class="cat-name">Children</div></div>
+      <div class="cat-pill"><div class="cat-icon">🏛️</div><div class="cat-name">History</div></div>
+    </div>
+  </section>
+
+  <section class="banner-section">
+    <div class="banner-text">
+      <h2>Start your reading journey today</h2>
+      <p>Join thousands of readers who discover their next favourite book every week on Folio.</p>
+    </div>
+    <button class="btn-light" onclick="openModal('signup')">Create Free Account</button>
+  </section>
+
+  <footer>
+    <div class="footer-logo">Folio</div>
+    <ul class="footer-links">
+      <li><a href="#">Browse</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+    <small>© 2026 Readly. All rights reserved.</small>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+    <div class="modal" id="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h2 class="modal-title" id="modal-title">Welcome back</h2>
+      <p class="modal-sub" id="modal-sub">Sign in to your Folio account to continue.</p>
+      <div class="modal-tabs">
+        <div class="modal-tab active" id="mtab-login" onclick="switchTab('login')">Sign In</div>
+        <div class="modal-tab" id="mtab-signup" onclick="switchTab('signup')">Create Account</div>
+      </div>
+      <div class="m-field signup-only" id="mf-name">
+        <label>Full Name</label>
+        <input type="text" placeholder="Jane Austen" />
+      </div>
+      <div class="m-field">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@example.com" />
+      </div>
+      <div class="m-field">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" />
+      </div>
+      <div class="m-field signup-only" id="mf-confirm">
+        <label>Confirm Password</label>
+        <input type="password" placeholder="••••••••" />
+      </div>
+      <div class="m-row" id="m-remember-row">
+        <label class="m-remember"><input type="checkbox" /> Remember me</label>
+        <a href="#" class="m-forgot">Forgot password?</a>
+      </div>
+      <button class="btn-modal-submit" id="modal-submit-btn">Sign In</button>
+      <div class="m-divider">or continue with</div>
+      <div class="m-socials">
+        <button class="m-social-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button class="m-social-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.164 6.839 9.49.5.09.682-.218.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.16 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          GitHub
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
-    let token = localStorage.getItem('token') || '';
-
-    async function login() {
-      const form = new URLSearchParams();
-      form.append('username', document.getElementById('email').value);
-      form.append('password', document.getElementById('password').value);
-      const r = await fetch('/api/auth/login', { method: 'POST', body: form });
-      const data = await r.json();
-      if (data.access_token) {
-        token = data.access_token;
-        localStorage.setItem('token', token);
-        show({ message: 'Logged in', ...data });
-      } else {
-        show(data);
-      }
+    function openModal(mode) {
+      document.getElementById('modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      switchTab(mode || 'login');
     }
-
-    async function get(url) {
-      const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      show(await r.json());
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
     }
-
-    function show(data) {
-      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    function switchTab(mode) {
+      const isSignup = mode === 'signup';
+      document.getElementById('mtab-login').classList.toggle('active', !isSignup);
+      document.getElementById('mtab-signup').classList.toggle('active', isSignup);
+      document.getElementById('modal-title').textContent = isSignup ? 'Create account' : 'Welcome back';
+      document.getElementById('modal-sub').textContent = isSignup ? 'Join Readly and start your reading journey.' : 'Sign in to your Folio account to continue.';
+      document.getElementById('modal-submit-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.getElementById('m-remember-row').style.display = isSignup ? 'none' : 'flex';
+      document.querySelectorAll('.signup-only').forEach(el => { el.style.display = isSignup ? 'block' : 'none'; });
     }
   </script>
 </body>
