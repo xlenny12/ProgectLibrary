@@ -161,6 +161,49 @@
       document.getElementById('m-remember-row').style.display = isSignup ? 'none' : 'flex';
       document.querySelectorAll('.signup-only').forEach(el => { el.style.display = isSignup ? 'block' : 'none'; });
     }
+
+    document.getElementById('modal-submit-btn').addEventListener('click', () => {
+  const mode = document.getElementById('mtab-signup').classList.contains('active') ? 'signup' : 'login';
+
+  const email = document.querySelector('.m-field input[type="email"]').value.trim();
+  const password = document.querySelector('.m-field input[type="password"]').value.trim();
+
+  if (mode === 'signup') {
+    const name = document.querySelector('#mf-name input').value.trim();
+    const confirmPassword = document.querySelector('#mf-confirm input').value.trim();
+
+    if (!name || !email || !password || !confirmPassword) {
+      alert('Заповни всі поля.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Паролі не збігаються!');
+      return;
+    }
+
+    // Зберігаємо акаунт у localStorage
+    localStorage.setItem('readlyUser', JSON.stringify({ name, email, password }));
+    alert('Акаунт створено!');
+    updateNavForUser(name);
+    closeModal();
+  } else {
+    const savedUser = JSON.parse(localStorage.getItem('readlyUser'));
+    if (!savedUser || savedUser.email !== email || savedUser.password !== password) {
+      alert('Невірний email або пароль.');
+      return;
+    }
+    alert('Вхід виконано!');
+    updateNavForUser(savedUser.name);
+    closeModal();
+  }
+});
+
+function updateNavForUser(name) {
+  const navBtn = document.querySelector('.nav-cta');
+  navBtn.textContent = `👤 ${name}`;
+  navBtn.onclick = () => alert(`Ви вже увійшли як ${name}`);
+}
+
   </script>
 </body>
 </html>
