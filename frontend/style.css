@@ -54,23 +54,73 @@ section { padding: 6rem 4rem; }
 .section-title { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 3.5vw, 3rem); color: var(--text-dark); margin-bottom: 3rem; }
 
 /* BOOKS */
-.books-section { background: white; }
-.books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2rem; }
+.books-section { background: white; padding: 6rem 4rem; }
+
+.books-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+  gap: 3rem; /* Трохи збільшив відступ для візуального комфорту */
+}
+
 .book-card { cursor: pointer; transition: transform 0.25s; }
-.book-card:hover { transform: translateY(-6px); }
-.book-cover { width: 100%; aspect-ratio: 2/3; border-radius: 6px 12px 12px 6px; margin-bottom: 1rem; box-shadow: 4px 8px 28px rgba(0,0,0,0.12); display: flex; align-items: flex-end; padding: 1rem; position: relative; overflow: hidden; }
-.book-cover::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: rgba(0,0,0,0.2); }
-.book-cover-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: rgba(255,255,255,0.92); line-height: 1.3; position: relative; z-index: 1; text-shadow: 0 1px 6px rgba(0,0,0,0.3); }
-.bc1 { background: linear-gradient(145deg, #5E7892, #3a5570); }
-.bc2 { background: linear-gradient(145deg, #8E9E83, #607055); }
-.bc3 { background: linear-gradient(145deg, #A7B7C6, #6e8898); }
-.bc4 { background: linear-gradient(145deg, #BDCFAA, #8aab72); }
-.bc5 { background: linear-gradient(145deg, #7a8e9e, #4e6675); }
-.bc6 { background: linear-gradient(145deg, #9eb89e, #6a8870); }
-.book-title { font-weight: 500; font-size: 1.25rem; margin-bottom: 0.2rem; }
-.book-author { font-size: 1.05rem; color: var(--text-muted); }
-.book-price { font-size: 1.15rem; font-weight: 500; color: var(--blue-dark); margin-top: 0.4rem; }
-.book-stars { color: var(--sage-dark); font-size: 0.8rem; margin-top: 0.3rem; }
+.book-card:hover { transform: translateY(-10px); }
+
+/* КОНТЕЙНЕР ОБКЛАДИНКИ */
+.book-cover { 
+  width: 100%; 
+  height: 360px; /* Фіксована висота для всіх обкладинок */
+  border-radius: 8px 16px 16px 8px; 
+  margin-bottom: 1.2rem; 
+  box-shadow: 4px 8px 28px rgba(0,0,0,0.15); 
+  position: relative; 
+  overflow: hidden; 
+  background-color: #f5f5f5; /* Світлий фон, якщо картинка довго вантажиться */
+}
+
+/* Ефект корінця книги (тінь зліва) */
+.book-cover::before { 
+  content: ''; 
+  position: absolute; 
+  left: 0; 
+  top: 0; 
+  bottom: 0; 
+  width: 12px; 
+  background: linear-gradient(to right, rgba(0,0,0,0.2), transparent); 
+  z-index: 2; 
+}
+
+/* САМА КАРТИНКА */
+.book-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Картинка заповнить блок, обрізавши зайве, але не деформуючись */
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.book-card:hover .book-img {
+  transform: scale(1.05); /* Легке збільшення при наведенні */
+}
+
+/* ТЕКСТ ПІД КНИГОЮ */
+.book-title { 
+  font-weight: 600; 
+  font-size: 1.25rem; 
+  margin-bottom: 0.3rem; 
+  color: var(--text-dark);
+}
+
+.book-author { 
+  font-size: 1.05rem; 
+  color: var(--text-muted); 
+  margin-bottom: 0.5rem;
+  display: block; 
+}
+
+.book-stars { 
+  color: var(--sage-dark); 
+  font-size: 0.9rem; 
+}
 
 /* CATEGORIES */
 .categories-section { background: var(--cream); }
@@ -135,7 +185,8 @@ footer small { font-size: 0.8rem; }
 .m-forgot { font-size: 0.82rem; color: var(--blue-dark); text-decoration: none; font-weight: 500; }
 .m-forgot:hover { text-decoration: underline; }
 .btn-modal-submit { width: 100%; background: var(--blue-dark); color: var(--cream); padding: 0.88rem; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; margin-bottom: 1.2rem; transition: background 0.2s, transform 0.15s; }
-.btn-modal-submit:hover { background: var(--text-dark); transform: translateY(-1px); }
+.btn-modal-submit:hover:not(:disabled) { background: var(--text-dark); transform: translateY(-1px); }
+.btn-modal-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 .m-divider { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: #b5bdb9; margin-bottom: 1rem; }
 .m-divider::before, .m-divider::after { content: ''; flex: 1; height: 1px; background: rgba(94,120,146,0.2); }
 .m-socials { display: flex; gap: 0.7rem; }
@@ -158,3 +209,8 @@ footer small { font-size: 0.8rem; }
   footer { padding: 2rem 1.5rem; flex-direction: column; text-align: center; }
   .modal { margin: 1rem; padding: 1.8rem; }
 }
+
+/* AUTH FEEDBACK BANNER — only addition to this file */
+.auth-feedback { display: none; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.82rem; font-weight: 500; margin-bottom: 1rem; line-height: 1.4; }
+.auth-feedback.success { display: block; background: #edf7ee; color: #2d6a34; border: 1px solid #b6debb; }
+.auth-feedback.error   { display: block; background: #fdf0ef; color: #9b2a1e; border: 1px solid #f0b8b4; }
