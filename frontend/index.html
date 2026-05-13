@@ -49,59 +49,12 @@
     <div class="section-label">Featured picks</div>
     <div class="section-title">Books you'll love</div>
     <div class="books-grid">
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book1.jpg" alt="The Midnight Library" class="book-img">
-        </div>
-        <div class="book-title">The Midnight Library</div>
-        <div class="book-author">Matt Haig</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book2.jpg" alt="Уроки хімії" class="book-img">
-        </div>
-        <div class="book-title">Уроки хімії</div>
-        <div class="book-author">Бонні Гармус</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book3.jpg" alt="Хімія смерті" class="book-img">
-        </div>
-        <div class="book-title">Хімія смерті</div>
-        <div class="book-author">Саймон Бекетт</div>
-        <div class="book-stars">★★★★☆</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book4.jpg" alt="Агент лилик" class="book-img">
-        </div>
-        <div class="book-title">Агент лилик</div>
-        <div class="book-author">Юрій Винничук</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book5.jpeg" alt="Demon Copperhead" class="book-img">
-        </div>
-        <div class="book-title">Demon Copperhead</div>
-        <div class="book-author">Barbara Kingsolver</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book6.jpg" alt="Happy Place" class="book-img">
-        </div>
-        <div class="book-title">Happy Place</div>
-        <div class="book-author">Emily Henry</div>
-        <div class="book-stars">★★★★☆</div>
-      </div>
+      <div class="book-card"><div class="book-cover bc1"><span class="book-cover-title">The Midnight Library</span></div><div class="book-title">The Midnight Library</div><div class="book-author">Matt Haig</div><div class="book-stars">★★★★★</div></div>
+      <div class="book-card"><div class="book-cover bc2"><span class="book-cover-title">Lessons in Chemistry</span></div><div class="book-title">Lessons in Chemistry</div><div class="book-author">Bonnie Garmus</div><div class="book-stars">★★★★★</div></div>
+      <div class="book-card"><div class="book-cover bc3"><span class="book-cover-title">Tomorrow, and Tomorrow</span></div><div class="book-title">Tomorrow, and Tomorrow</div><div class="book-author">Gabrielle Zevin</div><div class="book-stars">★★★★☆</div></div>
+      <div class="book-card"><div class="book-cover bc4"><span class="book-cover-title">Fourth Wing</span></div><div class="book-title">Fourth Wing</div><div class="book-author">Rebecca Yarros</div><div class="book-stars">★★★★★</div></div>
+      <div class="book-card"><div class="book-cover bc5"><span class="book-cover-title">Demon Copperhead</span></div><div class="book-title">Demon Copperhead</div><div class="book-author">Barbara Kingsolver</div><div class="book-stars">★★★★★</div></div>
+      <div class="book-card"><div class="book-cover bc6"><span class="book-cover-title">Happy Place</span></div><div class="book-title">Happy Place</div><div class="book-author">Emily Henry</div><div class="book-stars">★★★★☆</div></div>
     </div>
 </section>
 
@@ -123,7 +76,7 @@
   <section class="banner-section">
     <div class="banner-text">
       <h2>Start your reading journey today</h2>
-      <p>Join thousands of readers who discover their next favourite book every week on Folio.</p>
+      <p>Join thousands of readers who discover their next favourite book every week on Readly.</p>
     </div>
     <button class="btn-light" onclick="openModal('signup')">Create Free Account</button>
   </section>
@@ -259,69 +212,48 @@
       clearFeedback();
     }
 
-    // ── Form Submission ─────────────────────────────────────────────────────
-    document.getElementById('auth-form').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      clearFeedback();
+    document.getElementById('modal-submit-btn').addEventListener('click', () => {
+  const mode = document.getElementById('mtab-signup').classList.contains('active') ? 'signup' : 'login';
 
-      const form     = e.target;
-      const email    = form.email.value.trim();
-      const password = form.password.value;
+  const email = document.querySelector('.m-field input[type="email"]').value.trim();
+  const password = document.querySelector('.m-field input[type="password"]').value.trim();
 
-      // Client-side password match check (register only)
-      if (currentMode === 'register') {
-        if (password !== form.confirm_password.value) {
-          form.confirm_password.focus();
-          showFeedback('Passwords do not match. Please try again.', 'error');
-          return;
-        }
-      }
+  if (mode === 'signup') {
+    const name = document.querySelector('#mf-name input').value.trim();
+    const confirmPassword = document.querySelector('#mf-confirm input').value.trim();
 
-      // Build payload
-      const payload = { email, password };
-      if (currentMode === 'register') {
-        payload.full_name = form.full_name.value.trim();
-      }
+    if (!name || !email || !password || !confirmPassword) {
+      alert('Заповни всі поля.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Паролі не збігаються!');
+      return;
+    }
 
-      // Choose endpoint
-      const endpoint = currentMode === 'register'
-        ? `${API_BASE}/register`
-        : `${API_BASE}/login`;
+    // Зберігаємо акаунт у localStorage
+    localStorage.setItem('readlyUser', JSON.stringify({ name, email, password }));
+    alert('Акаунт створено!');
+    updateNavForUser(name);
+    closeModal();
+  } else {
+    const savedUser = JSON.parse(localStorage.getItem('readlyUser'));
+    if (!savedUser || savedUser.email !== email || savedUser.password !== password) {
+      alert('Невірний email або пароль.');
+      return;
+    }
+    alert('Вхід виконано!');
+    updateNavForUser(savedUser.name);
+    closeModal();
+  }
+});
 
-      // Disable button to prevent double-submission
-      const submitBtn = document.getElementById('modal-submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Please wait…';
+function updateNavForUser(name) {
+  const navBtn = document.querySelector('.nav-cta');
+  navBtn.textContent = `👤 ${name}`;
+  navBtn.onclick = () => alert(`Ви вже увійшли як ${name}`);
+}
 
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          const message = currentMode === 'register'
-            ? `Account created! Welcome, ${data.full_name ?? email}.`
-            : `Welcome back! Signed in as ${data.email ?? email}.`;
-          showFeedback(message, 'success');
-          setTimeout(closeModal, 1800);
-        } else {
-          const errorMessage = data.detail ?? data.message ?? 'Something went wrong. Please try again.';
-          showFeedback(`Error: ${errorMessage}`, 'error');
-        }
-
-      } catch (networkError) {
-        console.error('Auth request failed:', networkError);
-        showFeedback('Unable to reach the server. Please check your connection and try again.', 'error');
-
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === 'register' ? 'Create Account' : 'Sign In';
-      }
-    });
   </script>
 </body>
 </html>
