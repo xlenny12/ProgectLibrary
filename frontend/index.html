@@ -48,75 +48,37 @@
   <section class="books-section" id="books">
     <div class="section-label">Featured picks</div>
     <div class="section-title">Books you'll love</div>
-    <div class="books-grid">
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book1.jpg" alt="The Midnight Library" class="book-img">
-        </div>
-        <div class="book-title">The Midnight Library</div>
-        <div class="book-author">Matt Haig</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
 
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book2.jpg" alt="Уроки хімії" class="book-img">
-        </div>
-        <div class="book-title">Уроки хімії</div>
-        <div class="book-author">Бонні Гармус</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book3.jpg" alt="Хімія смерті" class="book-img">
-        </div>
-        <div class="book-title">Хімія смерті</div>
-        <div class="book-author">Саймон Бекетт</div>
-        <div class="book-stars">★★★★☆</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book4.jpg" alt="Агент лилик" class="book-img">
-        </div>
-        <div class="book-title">Агент лилик</div>
-        <div class="book-author">Юрій Винничук</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book5.jpeg" alt="Demon Copperhead" class="book-img">
-        </div>
-        <div class="book-title">Demon Copperhead</div>
-        <div class="book-author">Barbara Kingsolver</div>
-        <div class="book-stars">★★★★★</div>
-      </div>
-
-      <div class="book-card">
-        <div class="book-cover">
-          <img src="images/book6.jpg" alt="Happy Place" class="book-img">
-        </div>
-        <div class="book-title">Happy Place</div>
-        <div class="book-author">Emily Henry</div>
-        <div class="book-stars">★★★★☆</div>
-      </div>
+    <!-- CHANGE 1: genre filter bar added above the grid -->
+    <div class="genre-filter" id="genre-filter">
+      <div class="cat-pill active" data-genre="All"><div class="cat-icon">📚</div><div class="cat-name">All</div></div>
+      <div class="cat-pill" data-genre="Fantasy"><div class="cat-icon">🔮</div><div class="cat-name">Fantasy</div></div>
+      <div class="cat-pill" data-genre="Sci-Fi"><div class="cat-icon">🔬</div><div class="cat-name">Sci-Fi</div></div>
+      <div class="cat-pill" data-genre="Romance"><div class="cat-icon">💘</div><div class="cat-name">Romance</div></div>
+      <div class="cat-pill" data-genre="Detective/Thriller"><div class="cat-icon">🔍</div><div class="cat-name">Detective/Thriller</div></div>
+      <div class="cat-pill" data-genre="Fiction"><div class="cat-icon">📖</div><div class="cat-name">Fiction</div></div>
+      <div class="cat-pill" data-genre="Non-fiction"><div class="cat-icon">🌿</div><div class="cat-name">Non-fiction</div></div>
+      <div class="cat-pill" data-genre="Children's books"><div class="cat-icon">👶</div><div class="cat-name">Children's</div></div>
+      <div class="cat-pill" data-genre="History"><div class="cat-icon">🏛️</div><div class="cat-name">History</div></div>
     </div>
-</section>
+
+    <!-- CHANGE 2: static cards removed, id="books-grid" added, JS fills this -->
+    <div class="books-grid" id="books-grid"></div>
+  </section>
 
   <section class="categories-section" id="categories">
     <div class="section-label">Explore by genre</div>
     <div class="section-title">What are you in the mood for?</div>
+    <!-- CHANGE 3: data-genre added to each pill -->
     <div class="cats-grid">
-      <div class="cat-pill"><div class="cat-icon">🔮</div><div class="cat-name">Fantasy</div></div>
-      <div class="cat-pill"><div class="cat-icon">🔬</div><div class="cat-name">Sci-Fi</div></div>
-      <div class="cat-pill"><div class="cat-icon">💘</div><div class="cat-name">Romance</div></div>
-      <div class="cat-pill"><div class="cat-icon">🔍</div><div class="cat-name">Mystery</div></div>
-      <div class="cat-pill"><div class="cat-icon">📖</div><div class="cat-name">Literary</div></div>
-      <div class="cat-pill"><div class="cat-icon">🌿</div><div class="cat-name">Non-fiction</div></div>
-      <div class="cat-pill"><div class="cat-icon">👶</div><div class="cat-name">Children</div></div>
-      <div class="cat-pill"><div class="cat-icon">🏛️</div><div class="cat-name">History</div></div>
+      <div class="cat-pill" data-genre="Fantasy"><div class="cat-icon">🔮</div><div class="cat-name">Fantasy</div></div>
+      <div class="cat-pill" data-genre="Sci-Fi"><div class="cat-icon">🔬</div><div class="cat-name">Sci-Fi</div></div>
+      <div class="cat-pill" data-genre="Romance"><div class="cat-icon">💘</div><div class="cat-name">Romance</div></div>
+      <div class="cat-pill" data-genre="Detective/Thriller"><div class="cat-icon">🔍</div><div class="cat-name">Mystery</div></div>
+      <div class="cat-pill" data-genre="Fiction"><div class="cat-icon">📖</div><div class="cat-name">Literary</div></div>
+      <div class="cat-pill" data-genre="Non-fiction"><div class="cat-icon">🌿</div><div class="cat-name">Non-fiction</div></div>
+      <div class="cat-pill" data-genre="Children's books"><div class="cat-icon">👶</div><div class="cat-name">Children</div></div>
+      <div class="cat-pill" data-genre="History"><div class="cat-icon">🏛️</div><div class="cat-name">History</div></div>
     </div>
   </section>
 
@@ -150,10 +112,8 @@
         <div class="modal-tab" id="mtab-signup" onclick="switchTab('signup')">Create Account</div>
       </div>
 
-      <!-- Inline feedback banner — replaces alert() -->
       <div class="auth-feedback" id="auth-feedback" role="alert"></div>
 
-      <!-- No action/method — submission handled via fetch() -->
       <form id="auth-form" novalidate>
         <div class="m-field signup-only" id="mf-name">
           <label>Full Name</label>
@@ -191,6 +151,9 @@
       </div>
     </div>
   </div>
+
+  <!-- CHANGE 4: books.js loaded before the auth script -->
+  <script src="books.js"></script>
 
   <script>
     // ── Global State ────────────────────────────────────────────────────────
@@ -233,7 +196,6 @@
 
     // ── Tab / Mode Switching ────────────────────────────────────────────────
     function switchTab(mode) {
-      // Map 'signup' alias → canonical 'register' used for API routing
       currentMode = (mode === 'signup') ? 'register' : mode;
 
       const isRegister = currentMode === 'register';
@@ -268,7 +230,6 @@
       const email    = form.email.value.trim();
       const password = form.password.value;
 
-      // Client-side password match check (register only)
       if (currentMode === 'register') {
         if (password !== form.confirm_password.value) {
           form.confirm_password.focus();
@@ -277,18 +238,15 @@
         }
       }
 
-      // Build payload
       const payload = { email, password };
       if (currentMode === 'register') {
         payload.full_name = form.full_name.value.trim();
       }
 
-      // Choose endpoint
       const endpoint = currentMode === 'register'
         ? `${API_BASE}/register`
         : `${API_BASE}/login`;
 
-      // Disable button to prevent double-submission
       const submitBtn = document.getElementById('modal-submit-btn');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Please wait…';
