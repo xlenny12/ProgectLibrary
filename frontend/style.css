@@ -59,25 +59,23 @@ section { padding: 6rem 4rem; }
 .books-grid { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-  gap: 3rem; /* Трохи збільшив відступ для візуального комфорту */
+  gap: 3rem;
 }
 
 .book-card { cursor: pointer; transition: transform 0.25s; }
 .book-card:hover { transform: translateY(-10px); }
 
-/* КОНТЕЙНЕР ОБКЛАДИНКИ */
 .book-cover { 
   width: 100%; 
-  height: 360px; /* Фіксована висота для всіх обкладинок */
+  height: 360px;
   border-radius: 8px 16px 16px 8px; 
   margin-bottom: 1.2rem; 
   box-shadow: 4px 8px 28px rgba(0,0,0,0.15); 
   position: relative; 
   overflow: hidden; 
-  background-color: #f5f5f5; /* Світлий фон, якщо картинка довго вантажиться */
+  background-color: #f5f5f5;
 }
 
-/* Ефект корінця книги (тінь зліва) */
 .book-cover::before { 
   content: ''; 
   position: absolute; 
@@ -89,20 +87,18 @@ section { padding: 6rem 4rem; }
   z-index: 2; 
 }
 
-/* САМА КАРТИНКА */
 .book-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Картинка заповнить блок, обрізавши зайве, але не деформуючись */
+  object-fit: cover;
   display: block;
   transition: transform 0.4s ease;
 }
 
 .book-card:hover .book-img {
-  transform: scale(1.05); /* Легке збільшення при наведенні */
+  transform: scale(1.05);
 }
 
-/* ТЕКСТ ПІД КНИГОЮ */
 .book-title { 
   font-weight: 600; 
   font-size: 1.25rem; 
@@ -210,7 +206,28 @@ footer small { font-size: 0.8rem; }
   .modal { margin: 1rem; padding: 1.8rem; }
 }
 
-/* AUTH FEEDBACK BANNER — only addition to this file */
+/* AUTH FEEDBACK BANNER */
 .auth-feedback { display: none; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.82rem; font-weight: 500; margin-bottom: 1rem; line-height: 1.4; }
 .auth-feedback.success { display: block; background: #edf7ee; color: #2d6a34; border: 1px solid #b6debb; }
 .auth-feedback.error   { display: block; background: #fdf0ef; color: #9b2a1e; border: 1px solid #f0b8b4; }
+
+/* GENRE FILTER BAR */
+.genre-filter { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2.5rem; }
+.genre-filter .cat-pill.active,
+.genre-filter .cat-pill:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+.genre-filter .cat-pill.active .cat-name,
+.genre-filter .cat-pill:hover .cat-name { color: var(--cream); }
+
+/* BOOKS GRID — optimised for 80 cards */
+.books-grid { contain: layout style; }
+.books-grid:empty::after { content: 'No books found for this genre.'; grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0; }
+
+/* CARD FADE-IN ANIMATION */
+@keyframes bookFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.book-card.fade-in { animation: bookFadeIn 0.35s ease both; animation-delay: calc(var(--i, 0) * 40ms); }
+
+/* RESPONSIVE — genre filter */
+@media (max-width: 768px) {
+  .genre-filter { gap: 0.5rem; }
+  .books-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.2rem; }
+}
