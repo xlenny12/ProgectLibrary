@@ -11,11 +11,13 @@
 
   <nav>
     <a class="nav-logo" href="index.html">Readly</a>
+    
     <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
       <li><a href="index.html#books">Browse</a></li>
       <li><a href="index.html#categories">Categories</a></li>
-      <li><a href="#">New Arrivals</a></li>
-      <li><a href="#">About</a></li>
+      <li><a href="index.html">New Arrivals</a></li>
+      <li><a href="index.html">About</a></li>
     </ul>
     
     <div class="search-container">
@@ -35,7 +37,8 @@
           <button id="searchBtn" class="search-btn">Search</button>
       </div>
     </div>
-    <button class="nav-cta" onclick="window.location.href='index.html'">Log out</button>
+    
+    <button class="nav-cta" onclick="localStorage.removeItem('readlyUser'); window.location.href='index.html'">Log out</button>
   </nav>
 
   <main class="profile-container">
@@ -132,6 +135,32 @@
 
     </section>
   </main>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Шукаємо правильний ключ, який ми побачили на скріншоті
+      const savedData = localStorage.getItem('readlyUser');
+      
+      if (savedData) {
+        // 2. Розпаковуємо дані з формату JSON у звичайний об'єкт
+        const user = JSON.parse(savedData);
+        
+        // 3. Підставляємо реальне ім'я
+        if (user.name) {
+          document.querySelector('.user-name').textContent = user.name;
+          
+          // Робимо аватарку з перших літер імені
+          const initials = user.name.split(' ').map(word => word[0]).join('').toUpperCase();
+          document.querySelector('.avatar').textContent = initials;
+        }
+        
+        // 4. Підставляємо реальну пошту (якщо вона є в об'єкті)
+        if (user.email) {
+          document.querySelector('.user-email').textContent = user.email;
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>

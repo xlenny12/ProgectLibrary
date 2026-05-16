@@ -193,26 +193,26 @@
     const confirmPassword = document.querySelector('#mf-confirm input').value.trim();
 
     if (!name || !email || !password || !confirmPassword) {
-      alert('Заповни всі поля.');
+      alert('Fill in all fields.');
       return;
     }
     if (password !== confirmPassword) {
-      alert('Паролі не збігаються!');
+      alert('Passwords do not match!');
       return;
     }
 
     // Зберігаємо акаунт у localStorage
     localStorage.setItem('readlyUser', JSON.stringify({ name, email, password }));
-    alert('Акаунт створено!');
+    alert('Account created!');
     updateNavForUser(name);
     closeModal();
   } else {
     const savedUser = JSON.parse(localStorage.getItem('readlyUser'));
     if (!savedUser || savedUser.email !== email || savedUser.password !== password) {
-      alert('Невірний email або пароль.');
+      alert('Incorrect email or password.');
       return;
     }
-    alert('Вхід виконано!');
+    alert('Login is complete!');
     updateNavForUser(savedUser.name);
     closeModal();
   }
@@ -220,8 +220,11 @@
 
 function updateNavForUser(name) {
   const navBtn = document.querySelector('.nav-cta');
-  navBtn.textContent = `👤 ${name}`;
-  navBtn.onclick = () => alert(`Ви вже увійшли як ${name}`);
+  navBtn.textContent = `👤 ${name}`; 
+
+  navBtn.onclick = () => {
+      window.location.href = 'profile.html';
+  };
 }
 
   </script>
