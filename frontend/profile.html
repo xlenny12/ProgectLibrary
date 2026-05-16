@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — Readly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="index.html">Readly</a>
+    <ul class="nav-links">
+      <li><a href="index.html#books">Browse</a></li>
+      <li><a href="index.html#categories">Categories</a></li>
+      <li><a href="#">New Arrivals</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    
+    <div class="search-container">
+      <select id="genreSelect" class="search-select">
+          <option value="">All genres</option>
+          <option value="fantasy">Fantasy</option>
+          <option value="sci-fi">Sci-Fi</option>
+          <option value="romance">Romance</option>
+          <option value="mystery">Mystery</option>
+          <option value="literary">Literary</option>
+          <option value="non-fiction">Non-fiction</option>
+          <option value="children">Children</option>
+          <option value="history">History</option>
+      </select>
+      <div class="search-input-group">
+          <input type="text" id="searchInput" placeholder="Search for a book..." class="search-input">
+          <button id="searchBtn" class="search-btn">Search</button>
+      </div>
+    </div>
+    <button class="nav-cta" onclick="window.location.href='index.html'">Log out</button>
+  </nav>
+
+  <main class="profile-container">
+    
+    <aside class="user-card">
+      <div class="avatar">GG</div>
+      <h2 class="user-name">Gugu Gaga</h2>
+      <p class="user-email">gugugaga@example.com</p>
+      
+      <div class="user-stats">
+        <div><strong>14</strong><span>Read</span></div>
+        <div><strong>2</strong><span>Currently Reading</span></div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="#"><span class="icon">📚</span> My Profile</a></li>
+        <li><a href="#"><span class="icon">📖</span> Currently Reading</a></li>
+        <li class="active"><a href="#"><span class="icon">🕒</span> Borrowing History</a></li>
+        <li><a href="#"><span class="icon">⚙️</span> Settings</a></li>
+      </ul>
+    </aside>
+
+    <section class="history-section">
+      
+      <div class="history-header">
+        <div>
+          <h3 class="history-title">Borrowing History</h3>
+          <p class="history-subtitle">A list of books you've borrowed in the past.</p>
+        </div>
+        <div class="history-illustration">📚🌿</div>
+      </div>
+      
+      <div class="table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Book Title</th>
+              <th>Author</th>
+              <th>Borrowed On</th>
+              <th>Returned On</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-book">
+                <div class="mini-cover bc1"></div>
+                <span>The Midnight Library</span>
+              </td>
+              <td>Matt Haig</td>
+              <td>May 12, 2026</td>
+              <td>May 26, 2026</td>
+              <td><span class="status-pill returned">Returned</span></td>
+            </tr>
+            <tr>
+              <td class="td-book">
+                <div class="mini-cover bc2"></div>
+                <span>Python Object-Oriented Programming</span>
+              </td>
+              <td>Steven F. Lott</td>
+              <td>Apr 20, 2026</td>
+              <td>May 5, 2026</td>
+              <td><span class="status-pill returned">Returned</span></td>
+            </tr>
+            <tr>
+              <td class="td-book">
+                <div class="mini-cover bc5"></div>
+                <span>Practical Cryptography</span>
+              </td>
+              <td>Niels Ferguson</td>
+              <td>Mar 15, 2026</td>
+              <td>Mar 29, 2026</td>
+              <td><span class="status-pill returned">Returned</span></td>
+            </tr>
+            <tr>
+              <td class="td-book">
+                <div class="mini-cover bc6"></div>
+                <span>Lessons in Chemistry</span>
+              </td>
+              <td>Bonnie Garmus</td>
+              <td>Feb 2, 2026</td>
+              <td>Feb 16, 2026</td>
+              <td><span class="status-pill returned">Returned</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="page-btn">&lt;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">&gt;</button>
+      </div>
+
+    </section>
+  </main>
+
+</body>
+</html>
