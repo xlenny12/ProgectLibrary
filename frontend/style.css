@@ -27,48 +27,82 @@ nav {
 .nav-cta { background: var(--blue-dark); color: var(--cream); padding: 0.55rem 1.4rem; border-radius: 100px; border: none; font-family: 'DM Sans', sans-serif; font-size: 1.2rem; font-weight: 500; cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s, transform 0.15s; }
 .nav-cta:hover { background: var(--sage-dark); transform: translateY(-1px); }
 
-/* SEARCH BAR */
+/* SEARCH BAR FIX - ІДЕАЛЬНЕ ЗЛИТТЯ ТА СІРИЙ ТЕКСТ */
 .search-container {
   display: flex;
   align-items: center;
+  gap: 12px;
   margin-left: auto;
-  margin-right: 2rem;
+  margin-right: 1.5rem;
 }
 
-.search-input {
-  padding: 0.55rem 1.2rem;
-  border: 1.5px solid rgba(142, 158, 131, 0.4); /* Використовуємо відтінок вашого sage-dark */
-  border-radius: 100px 0 0 100px; /* Заокруглені краї ліворуч, як у кнопок */
-  background: rgba(255, 255, 255, 0.5);
+/* Обгортка, яка тримає поле і кнопку разом */
+.search-input-group {
+  display: flex;
+  align-items: center;
+  height: 42px; 
+}
+
+/* 1. Список жанрів із сірим текстом */
+.search-select {
+  height: 42px;
+  padding: 0 1.2rem 0 1rem;
+  border: 1.5px solid rgba(142, 158, 131, 0.5);
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #7a8c82; /* Сіріший текст, як у плейсхолдера */
   font-family: 'DM Sans', sans-serif;
   font-size: 0.95rem;
-  color: var(--text-dark);
+  cursor: pointer;
+  box-sizing: border-box;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
 }
 
-.search-input:focus {
-  border-color: var(--blue-dark);
-  background: #ffffff;
+/* Самі жанри у відкритому списку залишаємо темними для зручності */
+.search-select option {
+  color: var(--text-dark);
 }
 
+/* 2. Поле вводу (ліва частина) */
+.search-input {
+  height: 42px;
+  padding: 0 1rem;
+  border: 1.5px solid rgba(142, 158, 131, 0.5);
+  border-right: none; /* Прибираємо праву рамку для злиття */
+  border-radius: 100px 0 0 100px; /* Заокруглення лише зліва */
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-dark);
+  width: 170px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Колір тексту-підказки "Шукати книгу..." */
 .search-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.7;
+  color: #7a8c82;
 }
 
+/* 3. Кнопка пошуку (права частина) */
 .search-btn {
-  padding: 0.55rem 1.4rem;
+  height: 42px;
+  padding: 0 1.2rem;
   background: var(--blue-dark);
   color: var(--cream);
   border: 1.5px solid var(--blue-dark);
-  border-left: none;
-  border-radius: 0 100px 100px 0; /* Заокруглені краї праворуч */
+  border-left: none; /* Прибираємо ліву рамку для злиття */
+  border-radius: 0 100px 100px 0; /* Заокруглення лише справа */
   font-family: 'DM Sans', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s;
+  min-width: 90px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .search-btn:hover {

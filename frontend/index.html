@@ -18,10 +18,24 @@
       <li><a href="#">About</a></li>
     </ul>
     
-    <div class="search-container">
-        <input type="text" placeholder="Шукати книгу..." class="search-input">
-        <button type="submit" class="search-btn">Пошук</button>
+   <div class="search-container">
+    <select id="genreSelect" class="search-select">
+        <option value="">All genres</option>
+        <option value="fantasy">Fantasy</option>
+        <option value="sci-fi">Sci-Fi</option>
+        <option value="romance">Romance</option>
+        <option value="mystery">Mystery</option>
+        <option value="literary">Literary</option>
+        <option value="non-fiction">Non-fiction</option>
+        <option value="children">Children</option>
+        <option value="history">History</option>
+    </select>
+
+    <div class="search-input-group">
+        <input type="text" id="searchInput" placeholder="Search for a book..." class="search-input">
+        <button id="searchBtn" class="search-btn">Search</button>
     </div>
+</div>
 
     <button class="nav-cta" onclick="openModal('login')">Sign In</button>
   </nav>
@@ -54,7 +68,7 @@
   <section class="books-section" id="books">
     <div class="section-label">Featured picks</div>
     <div class="section-title">Books you'll love</div>
-    <div class="books-grid">
+    <div class="books-grid" id="booksGrid">
       <div class="book-card"><div class="book-cover bc1"><span class="book-cover-title">The Midnight Library</span></div><div class="book-title">The Midnight Library</div><div class="book-author">Matt Haig</div><div class="book-stars">★★★★★</div></div>
       <div class="book-card"><div class="book-cover bc2"><span class="book-cover-title">Lessons in Chemistry</span></div><div class="book-title">Lessons in Chemistry</div><div class="book-author">Bonnie Garmus</div><div class="book-stars">★★★★★</div></div>
       <div class="book-card"><div class="book-cover bc3"><span class="book-cover-title">Tomorrow, and Tomorrow</span></div><div class="book-title">Tomorrow, and Tomorrow</div><div class="book-author">Gabrielle Zevin</div><div class="book-stars">★★★★☆</div></div>
@@ -211,5 +225,6 @@ function updateNavForUser(name) {
 }
 
   </script>
+  <script src="app.js"></script>
 </body>
 </html>
