@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Demon Copperhead",
+    "author": "Barbara Kingsolver",
+    "genre": "literary",
+    "year": 2022,
+    "status": "available",
+    "cover_color": "bc1"
+  },
+  {
+    "id": 2,
+    "title": "Happy Place",
+    "author": "Emily Henry",
+    "genre": "romance",
+    "year": 2023,
+    "status": "borrowed",
+    "cover_color": "bc2"
+  },
+  {
+    "id": 3,
+    "title": "The Midnight Library",
+    "author": "Matt Haig",
+    "genre": "fantasy",
+    "year": 2020,
+    "status": "available",
+    "cover_color": "bc3"
+  },
+  {
+    "id": 4,
+    "title": "Lessons in Chemistry",
+    "author": "Bonnie Garmus",
+    "genre": "history",
+    "year": 2022,
+    "status": "available",
+    "cover_color": "bc4"
+  },
+  {
+    "id": 5,
+    "title": "Tomorrow, and Tomorrow, and Tomorrow",
+    "author": "Gabrielle Zevin",
+    "genre": "literary",
+    "year": 2022,
+    "status": "borrowed",
+    "cover_color": "bc5"
+  },
+  {
+    "id": 6,
+    "title": "Fourth Wing",
+    "author": "Rebecca Yarros",
+    "genre": "fantasy",
+    "year": 2023,
+    "status": "available",
+    "cover_color": "bc6"
+  }
+]
