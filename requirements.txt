@@ -16,7 +16,7 @@ PyJWT==2.12.1
 python-multipart==0.0.22
 
 # Background Tasks & Scheduling
-apscheduler==3.11.12
+apscheduler
 
 # Notifications
 twilio==9.10.3
