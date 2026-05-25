@@ -17,6 +17,26 @@
       <li><a href="#">New Arrivals</a></li>
       <li><a href="#">About</a></li>
     </ul>
+    
+   <div class="search-container">
+    <select id="genreSelect" class="search-select">
+        <option value="">All genres</option>
+        <option value="fantasy">Fantasy</option>
+        <option value="sci-fi">Sci-Fi</option>
+        <option value="romance">Romance</option>
+        <option value="mystery">Mystery</option>
+        <option value="literary">Literary</option>
+        <option value="non-fiction">Non-fiction</option>
+        <option value="children">Children</option>
+        <option value="history">History</option>
+    </select>
+
+    <div class="search-input-group">
+        <input type="text" id="searchInput" placeholder="Search for a book..." class="search-input">
+        <button id="searchBtn" class="search-btn">Search</button>
+    </div>
+</div>
+
     <button class="nav-cta" onclick="openModal('login')">Sign In</button>
   </nav>
 
@@ -281,5 +301,6 @@
       }
     });
   </script>
+  <script src="app.js"></script>
 </body>
 </html>
