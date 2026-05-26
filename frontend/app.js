@@ -3,8 +3,10 @@
  * Complete API integration for all user roles
  */
 
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000/api`;
-let currentUser = null;
+const API_BASE =
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+    : `${window.location.origin}/api`;let currentUser = null;
 let currentToken = null;
 let refreshToken = null;
 let editingBookId = null;
