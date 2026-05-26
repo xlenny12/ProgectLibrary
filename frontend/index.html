@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Readly - Library System</title>
+  <title>Readly - бібліотечна система</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -15,28 +15,28 @@
   <nav>
     <a class="nav-logo" href="#" onclick="showPanel('home'); return false;">Readly</a>
     <ul class="nav-links">
-      <li><a href="#books" onclick="showPanel('home')">Browse</a></li>
-      <li><a href="#categories" onclick="showPanel('home')">Categories</a></li>
-      <li id="nav-my-borrows" style="display:none"><a href="#" onclick="showPanel('borrows'); return false;">My Books</a></li>
-      <li id="nav-admin" style="display:none"><a href="#" onclick="showPanel('admin'); return false;">Admin</a></li>
+      <li><a href="#books" onclick="showPanel('home')">Каталог</a></li>
+      <li id="nav-my-borrows" style="display:none"><a href="#" onclick="showPanel('borrows'); return false;">Мої книги</a></li>
+      <li id="nav-profile" style="display:none"><a href="#" onclick="showPanel('profile'); return false;">Профіль</a></li>
+      <li id="nav-admin" style="display:none"><a href="#" onclick="showPanel('admin'); return false;">Адмін</a></li>
     </ul>
     <div class="nav-right">
       <span id="nav-user-name" class="nav-user-name" style="display:none"></span>
       <span id="nav-role-badge" class="role-badge" style="display:none"></span>
-      <button class="nav-cta" id="nav-auth-btn" onclick="openModal('login')">Sign In</button>
-      <button class="nav-cta nav-cta-logout" id="nav-logout-btn" style="display:none" onclick="logout()">Sign Out</button>
+      <button class="nav-cta" id="nav-auth-btn" onclick="openModal('login')">Увійти</button>
+      <button class="nav-cta nav-cta-logout" id="nav-logout-btn" style="display:none" onclick="logout()">Вийти</button>
     </div>
   </nav>
 
   <main>
     <section class="hero" id="hero-section">
       <div class="hero-text">
-        <span class="hero-eyebrow">Secure student library demo</span>
-        <h1>Borrow books with privacy built in</h1>
-        <p class="hero-sub">Choose fantasy, criminal, or drama titles, track due dates, and keep personal data protected by role-based access.</p>
+        <span class="hero-eyebrow">Онлайн-бібліотека</span>
+        <h1>Знайдіть свою наступну книгу в Readly</h1>
+        <p class="hero-sub">Переглядайте каталог, беріть книги на зручний термін і стежте за поверненнями у власному кабінеті.</p>
         <div class="hero-actions">
-          <a href="#books" class="btn-primary">Browse Books</a>
-          <button class="btn-secondary" onclick="openModal('signup')">Create Account</button>
+          <a href="#books" class="btn-primary">Переглянути книги</a>
+          <button class="btn-secondary" id="hero-signup-btn" onclick="openModal('signup')">Створити акаунт</button>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -48,20 +48,23 @@
     </section>
 
     <div class="stats-section home-section">
-      <div><div class="stat-num" id="stat-books">0</div><div class="stat-label">Books available</div></div>
-      <div><div class="stat-num" id="stat-genres">3</div><div class="stat-label">Required genres</div></div>
-      <div><div class="stat-num" id="stat-borrows">0</div><div class="stat-label">Overdue borrows</div></div>
-      <div><div class="stat-num">RBAC</div><div class="stat-label">Role-based access</div></div>
+      <div><div class="stat-num" id="stat-books">0</div><div class="stat-label">Книг у каталозі</div></div>
+      <div><div class="stat-num" id="stat-genres">3</div><div class="stat-label">Жанри</div></div>
+      <div><div class="stat-num" id="stat-borrows">0</div><div class="stat-label">Прострочені книги</div></div>
     </div>
 
     <section class="books-section home-section" id="books">
-      <div class="section-label">Catalog</div>
-      <div class="section-title">Available Books</div>
+      <div class="section-label">Каталог</div>
+      <div class="section-title">Доступні книги</div>
+      <div class="search-row">
+        <label class="search-label" for="search-input">Пошук</label>
+        <input id="search-input" class="search-input" type="text" name="catalog_filter_readly" placeholder="Назва, автор або жанр" autocomplete="off" autocapitalize="none" spellcheck="false" aria-autocomplete="none" data-form-type="other" data-lpignore="true" data-1p-ignore="true" readonly />
+      </div>
       <div class="genre-filter" id="genre-filter">
-        <button class="genre-btn active" onclick="filterByGenre('')">All</button>
-        <button class="genre-btn" onclick="filterByGenre('fantasy')">Fantasy</button>
-        <button class="genre-btn" onclick="filterByGenre('criminal')">Criminal</button>
-        <button class="genre-btn" onclick="filterByGenre('drama')">Drama</button>
+        <button class="genre-btn active" onclick="filterByGenre('', this)">Усі</button>
+        <button class="genre-btn" onclick="filterByGenre('fantasy', this)">Фентезі</button>
+        <button class="genre-btn" onclick="filterByGenre('criminal', this)">Кримінальна</button>
+        <button class="genre-btn" onclick="filterByGenre('drama', this)">Драма</button>
       </div>
       <div class="books-grid" id="books-grid">
         <div class="book-card skeleton-card"><div class="book-cover-skeleton"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
@@ -70,57 +73,54 @@
       </div>
     </section>
 
-    <section class="categories-section home-section" id="categories">
-      <div class="section-label">Explore by genre</div>
-      <div class="section-title">What are you in the mood for?</div>
-      <div class="cats-grid">
-        <button class="cat-pill" onclick="filterByGenre('fantasy')"><span class="cat-icon">F</span><span class="cat-name">Fantasy</span></button>
-        <button class="cat-pill" onclick="filterByGenre('criminal')"><span class="cat-icon">C</span><span class="cat-name">Criminal</span></button>
-        <button class="cat-pill" onclick="filterByGenre('drama')"><span class="cat-icon">D</span><span class="cat-name">Drama</span></button>
-      </div>
-    </section>
-
     <section class="panel-section" id="panel-borrows" style="display:none">
-      <div class="section-label">My account</div>
-      <div class="section-title">My Borrowed Books</div>
+      <div class="section-label">Мій акаунт</div>
+      <div class="section-title">Мої книги</div>
       <div class="borrows-tabs">
-        <button class="borrow-tab active" onclick="filterBorrows('active', this)">Active</button>
-        <button class="borrow-tab" onclick="filterBorrows('returned', this)">Returned</button>
-        <button class="borrow-tab" onclick="filterBorrows('all', this)">All</button>
+        <button class="borrow-tab active" onclick="filterBorrows('active', this)">Активні</button>
+        <button class="borrow-tab" onclick="filterBorrows('returned', this)">Повернені</button>
+        <button class="borrow-tab" onclick="filterBorrows('all', this)">Усі</button>
       </div>
       <div id="borrows-list" class="borrows-list">
         <div class="loading-spinner"></div>
       </div>
+    </section>
 
+    <section class="panel-section" id="panel-profile" style="display:none">
+      <div class="section-label">Профіль</div>
+      <div class="section-title">Мій профіль</div>
       <div class="profile-card" id="profile-card" style="display:none">
         <div class="profile-card-header">
-          <h3>My Profile</h3>
-          <button class="btn-small" onclick="openEditProfile()">Edit</button>
+          <h3>Дані акаунта</h3>
+          <div class="profile-actions">
+            <button class="btn-small" onclick="openEditProfile()">Редагувати</button>
+            <button class="btn-danger-sm" onclick="confirmDeleteAccount()">Видалити акаунт</button>
+          </div>
         </div>
         <div id="profile-details" class="profile-details"></div>
       </div>
     </section>
 
     <section class="panel-section" id="panel-admin" style="display:none">
-      <div class="section-label">Administration</div>
-      <div class="section-title">Library Management</div>
+      <div class="section-label">Адміністрування</div>
+      <div class="section-title">Керування бібліотекою</div>
       <div class="admin-actions">
-        <button class="btn-small" id="btn-add-user" style="display:none" onclick="openCreateUserModal()">Add User</button>
-        <button class="btn-small" id="btn-add-book" style="display:none" onclick="openAddBookModal()">Add Book</button>
-        <button class="btn-small" id="btn-notify-sms" style="display:none" onclick="sendOverdueNotifications(true)">Send SMS Reminders</button>
-        <button class="btn-secondary" id="btn-notify-email" style="display:none" onclick="sendOverdueNotifications(false)">Send Email Reminders</button>
+        <button class="btn-small" id="btn-add-user" style="display:none" onclick="openCreateUserModal()">Додати користувача</button>
+        <button class="btn-small" id="btn-add-book" style="display:none" onclick="openAddBookModal()">Додати книгу</button>
+        <button class="btn-small" id="btn-notify-sms" style="display:none" onclick="sendOverdueNotifications(true)">Надіслати SMS</button>
+        <button class="btn-secondary" id="btn-notify-email" style="display:none" onclick="sendOverdueNotifications(false)">Надіслати email</button>
       </div>
       <div class="admin-grid">
         <div class="admin-col">
-          <div class="admin-col-header"><h3>Users</h3></div>
+          <div class="admin-col-header"><h3>Користувачі</h3></div>
           <div id="admin-users-list" class="admin-list"><div class="loading-spinner"></div></div>
         </div>
         <div class="admin-col">
-          <div class="admin-col-header"><h3>Books</h3></div>
+          <div class="admin-col-header"><h3>Книги</h3></div>
           <div id="admin-books-list" class="admin-list"><div class="loading-spinner"></div></div>
         </div>
         <div class="admin-col">
-          <div class="admin-col-header"><h3>Overdue Borrows</h3></div>
+          <div class="admin-col-header"><h3>Прострочені книги</h3></div>
           <div id="admin-overdue-list" class="admin-list"><div class="loading-spinner"></div></div>
         </div>
       </div>
@@ -129,130 +129,130 @@
 
   <footer>
     <div class="footer-logo">Readly</div>
-    <small>Library system demo, 2026</small>
+    <small>made by Mainstream code</small>
   </footer>
 
   <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
     <div class="modal" id="modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeModal()" aria-label="Close">x</button>
-      <h2 class="modal-title" id="modal-title">Welcome back</h2>
-      <p class="modal-sub" id="modal-sub">Sign in to your Readly account.</p>
+      <button class="modal-close" onclick="closeModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="modal-title">Вхід</h2>
+      <p class="modal-sub" id="modal-sub">Увійдіть у свій акаунт Readly.</p>
       <div class="modal-tabs" id="modal-tabs">
-        <button class="modal-tab active" id="mtab-login" onclick="switchTab('login')">Sign In</button>
-        <button class="modal-tab" id="mtab-signup" onclick="switchTab('signup')">Create Account</button>
+        <button class="modal-tab active" id="mtab-login" onclick="switchTab('login')">Увійти</button>
+        <button class="modal-tab" id="mtab-signup" onclick="switchTab('signup')">Створити акаунт</button>
       </div>
       <div id="modal-error" class="modal-error" style="display:none"></div>
       <div class="m-field signup-only" id="mf-name">
-        <label for="field-name">Full Name</label>
+        <label for="field-name">ПІБ</label>
         <input type="text" id="field-name" autocomplete="name" />
       </div>
       <div class="m-field signup-only" id="mf-dob">
-        <label for="field-dob">Date of Birth</label>
+        <label for="field-dob">Дата народження</label>
         <input type="date" id="field-dob" />
       </div>
       <div class="m-field signup-only" id="mf-address">
-        <label for="field-address">Address</label>
+        <label for="field-address">Адреса проживання</label>
         <input type="text" id="field-address" autocomplete="street-address" />
       </div>
       <div class="m-field signup-only" id="mf-phone">
-        <label for="field-phone">Phone Number</label>
+        <label for="field-phone">Номер телефону</label>
         <input type="tel" id="field-phone" autocomplete="tel" />
       </div>
       <div class="m-field">
-        <label for="field-email">Email Address</label>
+        <label for="field-email">Email</label>
         <input type="email" id="field-email" autocomplete="email" />
       </div>
       <div class="m-field">
-        <label for="field-password">Password</label>
+        <label for="field-password">Пароль</label>
         <input type="password" id="field-password" autocomplete="current-password" />
       </div>
       <div class="m-field signup-only" id="mf-confirm">
-        <label for="field-confirm">Confirm Password</label>
+        <label for="field-confirm">Підтвердження пароля</label>
         <input type="password" id="field-confirm" autocomplete="new-password" />
       </div>
       <div class="m-row" id="m-remember-row">
-        <label class="m-remember"><input type="checkbox" id="field-remember" /> Remember me</label>
+        <label class="m-remember"><input type="checkbox" id="field-remember" /> Запам'ятати мене</label>
       </div>
-      <button class="btn-modal-submit" id="modal-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
+      <button class="btn-modal-submit" id="modal-submit-btn" onclick="handleAuthSubmit()">Увійти</button>
       <div id="modal-loading" class="modal-loading" style="display:none">
         <div class="loading-spinner small"></div>
-        <span>Please wait...</span>
+        <span>Зачекайте...</span>
       </div>
     </div>
   </div>
 
   <div class="modal-overlay" id="borrow-modal-overlay" onclick="closeBorrowModal()">
     <div class="modal" id="borrow-modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeBorrowModal()" aria-label="Close">x</button>
-      <h2 class="modal-title" id="borrow-modal-title">Borrow Book</h2>
+      <button class="modal-close" onclick="closeBorrowModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="borrow-modal-title">Взяти книгу</h2>
       <p class="modal-sub" id="borrow-modal-sub"></p>
       <div id="borrow-modal-error" class="modal-error" style="display:none"></div>
       <div class="m-field">
-        <label for="borrow-qty">Number of copies</label>
+        <label for="borrow-qty">Кількість примірників</label>
         <input type="number" id="borrow-qty" min="1" max="10" value="1" />
       </div>
       <div class="m-field">
-        <label for="borrow-days">Borrow period (days)</label>
+        <label for="borrow-days">Термін користування (днів)</label>
         <input type="number" id="borrow-days" min="1" max="365" value="14" />
       </div>
       <p class="borrow-due-preview" id="borrow-due-preview"></p>
-      <button class="btn-modal-submit" onclick="submitBorrow()">Confirm Borrow</button>
+      <button class="btn-modal-submit" onclick="submitBorrow()">Підтвердити</button>
     </div>
   </div>
 
   <div class="modal-overlay" id="add-book-modal-overlay" onclick="closeAddBookModal()">
     <div class="modal" id="add-book-modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeAddBookModal()" aria-label="Close">x</button>
-      <h2 class="modal-title" id="add-book-modal-title">Add Book</h2>
+      <button class="modal-close" onclick="closeAddBookModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="add-book-modal-title">Додати книгу</h2>
       <div id="add-book-error" class="modal-error" style="display:none"></div>
       <div class="m-field">
-        <label for="book-title">Title</label>
+        <label for="book-title">Назва</label>
         <input type="text" id="book-title" />
       </div>
       <div class="m-field">
-        <label for="book-author">Author</label>
+        <label for="book-author">Автор</label>
         <input type="text" id="book-author" />
       </div>
       <div class="m-field">
-        <label for="book-genre">Genre</label>
+        <label for="book-genre">Жанр</label>
         <select id="book-genre" class="m-select">
-          <option value="fantasy">Fantasy</option>
-          <option value="criminal">Criminal</option>
-          <option value="drama">Drama</option>
+          <option value="fantasy">Фентезі</option>
+          <option value="criminal">Кримінальна</option>
+          <option value="drama">Драма</option>
         </select>
       </div>
       <div class="m-field">
-        <label for="book-total">Total copies</label>
+        <label for="book-total">Загальна кількість</label>
         <input type="number" id="book-total" min="1" value="1" />
       </div>
       <div class="m-field">
-        <label for="book-available">Available copies</label>
+        <label for="book-available">Доступна кількість</label>
         <input type="number" id="book-available" min="0" value="1" />
       </div>
-      <button class="btn-modal-submit" onclick="submitAddBook()">Add Book</button>
+      <button class="btn-modal-submit" id="book-submit-btn" onclick="submitAddBook()">Додати книгу</button>
     </div>
   </div>
 
   <div class="modal-overlay" id="create-user-modal-overlay" onclick="closeCreateUserModal()">
     <div class="modal" id="create-user-modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeCreateUserModal()" aria-label="Close">x</button>
-      <h2 class="modal-title">Create Staff/User Account</h2>
-      <p class="modal-sub">Admin-only account creation with explicit role assignment.</p>
+      <button class="modal-close" onclick="closeCreateUserModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title">Створити користувача</h2>
+      <p class="modal-sub">Створення акаунта з роллю доступне тільки адміністратору.</p>
       <div id="create-user-error" class="modal-error" style="display:none"></div>
       <div class="m-field">
-        <label for="cu-name">Full Name</label>
+        <label for="cu-name">ПІБ</label>
         <input type="text" id="cu-name" autocomplete="name" />
       </div>
       <div class="m-field">
-        <label for="cu-dob">Date of Birth</label>
+        <label for="cu-dob">Дата народження</label>
         <input type="date" id="cu-dob" />
       </div>
       <div class="m-field">
-        <label for="cu-address">Address</label>
+        <label for="cu-address">Адреса проживання</label>
         <input type="text" id="cu-address" autocomplete="street-address" />
       </div>
       <div class="m-field">
-        <label for="cu-phone">Phone Number</label>
+        <label for="cu-phone">Номер телефону</label>
         <input type="tel" id="cu-phone" autocomplete="tel" />
       </div>
       <div class="m-field">
@@ -260,28 +260,28 @@
         <input type="email" id="cu-email" autocomplete="email" />
       </div>
       <div class="m-field">
-        <label for="cu-password">Temporary Password</label>
+        <label for="cu-password">Тимчасовий пароль</label>
         <input type="password" id="cu-password" autocomplete="new-password" />
       </div>
       <div class="m-field">
-        <label for="cu-role">Role</label>
+        <label for="cu-role">Роль</label>
         <select id="cu-role" class="m-select">
-          <option value="User">User</option>
-          <option value="Advanced user">Advanced user</option>
-          <option value="Administrator">Administrator</option>
+          <option value="User">Користувач</option>
+          <option value="Advanced user">Розширений користувач</option>
+          <option value="Administrator">Адміністратор</option>
         </select>
       </div>
-      <button class="btn-modal-submit" onclick="submitCreateUser()">Create Account</button>
+      <button class="btn-modal-submit" onclick="submitCreateUser()">Створити акаунт</button>
     </div>
   </div>
 
   <div class="modal-overlay" id="edit-profile-overlay" onclick="closeEditProfile()">
     <div class="modal" id="edit-profile-modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeEditProfile()" aria-label="Close">x</button>
-      <h2 class="modal-title">Edit Profile</h2>
+      <button class="modal-close" onclick="closeEditProfile()" aria-label="Закрити">x</button>
+      <h2 class="modal-title">Редагувати профіль</h2>
       <div id="edit-profile-error" class="modal-error" style="display:none"></div>
       <div class="m-field">
-        <label for="edit-name">Full Name</label>
+        <label for="edit-name">ПІБ</label>
         <input type="text" id="edit-name" />
       </div>
       <div class="m-field">
@@ -289,18 +289,18 @@
         <input type="email" id="edit-email" />
       </div>
       <div class="m-field">
-        <label for="edit-phone">Phone</label>
+        <label for="edit-phone">Телефон</label>
         <input type="tel" id="edit-phone" />
       </div>
       <div class="m-field">
-        <label for="edit-address">Address</label>
+        <label for="edit-address">Адреса</label>
         <input type="text" id="edit-address" />
       </div>
       <div class="m-field">
-        <label for="edit-dob">Date of Birth</label>
+        <label for="edit-dob">Дата народження</label>
         <input type="date" id="edit-dob" />
       </div>
-      <button class="btn-modal-submit" onclick="submitEditProfile()">Save Changes</button>
+      <button class="btn-modal-submit" onclick="submitEditProfile()">Зберегти зміни</button>
     </div>
   </div>
 
