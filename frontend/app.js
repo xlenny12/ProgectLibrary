@@ -3,11 +3,41 @@
  * Complete API integration for all user roles
  */
 
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000/api`;
+const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const API_BASE = isLocalFrontend
+  ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+  : `${window.location.origin}/api`;
 let currentUser = null;
 let currentToken = null;
 let refreshToken = null;
 let editingBookId = null;
+let allBooks = [];
+let currentGenreFilter = "";
+let currentSearchQuery = "";
+let currentBorrowFilter = "active";
+
+const ROLE_LABELS = {
+  "Administrator": "Адміністратор",
+  "Advanced user": "Розширений користувач",
+  "User": "Користувач",
+};
+
+const BOOK_TYPE_LABELS = {
+  fantasy: "Фентезі",
+  criminal: "Кримінальна",
+  drama: "Драма",
+};
+
+const COVER_COLORS = [
+  "#245c73",
+  "#3f7f5f",
+  "#8f5f4a",
+  "#5a6170",
+  "#7a4f69",
+  "#6e7345",
+  "#4f6f8f",
+  "#8b5e3c",
+];
 
 function isAdmin() {
   return currentUser?.role === "Administrator";
@@ -37,6 +67,44 @@ function formatApiError(data, fallback) {
     return data.detail.map((item) => item.msg || JSON.stringify(item)).join("; ");
   }
   return fallback;
+}
+
+function roleLabel(role) {
+  return ROLE_LABELS[role] || role;
+}
+
+function bookTypeLabel(type) {
+  return BOOK_TYPE_LABELS[type] || type;
+}
+
+function formatDate(value) {
+  return new Date(value).toLocaleDateString("uk-UA");
+}
+
+function looksLikeEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+function coverColor(book, index) {
+  const seed = String(book.id || book.title || index)
+    .split("")
+    .reduce((sum, char) => sum + char.charCodeAt(0), index);
+  return COVER_COLORS[seed % COVER_COLORS.length];
+}
+
+async function ensureBooksLoaded() {
+  if (allBooks.length > 0) return;
+
+  const res = await fetch(`${API_BASE}/books`, {
+    headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : {},
+  });
+
+  if (!res.ok) throw new Error("Не вдалося завантажити каталог книг");
+  allBooks = await res.json();
+}
+
+function findBookById(bookId) {
+  return allBooks.find((book) => book.id === bookId);
 }
 
 // ========================================
@@ -89,7 +157,7 @@ function logout() {
   showPanel("home");
   updateAuthUI();
   loadBooks();
-  showToast("You have been signed out");
+  showToast("Ви вийшли з акаунта");
 }
 
 // ========================================
@@ -116,27 +184,27 @@ async function registerUser() {
   const confirm = document.getElementById("field-confirm").value;
 
   if (!name || !dob || !address || !phone || !email || !password || !confirm) {
-    showModalError("All fields are required");
+    showModalError("Заповніть усі поля");
     return;
   }
 
   if (password !== confirm) {
-    showModalError("Passwords do not match");
+    showModalError("Паролі не збігаються");
     return;
   }
 
   if (password.length < 8) {
-    showModalError("Password must be at least 8 characters");
+    showModalError("Пароль має містити щонайменше 8 символів");
     return;
   }
 
   if (!/[A-Z]/.test(password)) {
-    showModalError("Password must contain an uppercase letter");
+    showModalError("Пароль має містити велику літеру");
     return;
   }
 
   if (!/[0-9]/.test(password)) {
-    showModalError("Password must contain a digit");
+    showModalError("Пароль має містити цифру");
     return;
   }
 
@@ -158,13 +226,17 @@ async function registerUser() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, "Registration failed"));
+      throw new Error(formatApiError(data, "Не вдалося зареєструватися"));
     }
 
-    const user = await res.json();
-    showToast("Account created! Please sign in.");
+    await signInWithCredentials(email, password);
+    showToast("Акаунт створено. Ви вже увійшли в систему.");
     clearAuthForm();
-    switchTab("login");
+    closeModal();
+    loadBooks();
+    if (canUseStaffPanel()) {
+      loadAdminPanel();
+    }
   } catch (error) {
     showModalError(error.message);
   } finally {
@@ -172,40 +244,45 @@ async function registerUser() {
   }
 }
 
+async function signInWithCredentials(email, password) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ username: email, password }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(formatApiError(data, "Не вдалося увійти"));
+  }
+
+  const data = await res.json();
+  const userRes = await fetch(`${API_BASE}/users/me`, {
+    headers: { Authorization: `Bearer ${data.access_token}` },
+  });
+  if (!userRes.ok) throw new Error("Не вдалося завантажити профіль");
+  const user = await userRes.json();
+
+  saveUserSession(user, data.access_token, data.refresh_token);
+  return user;
+}
+
 async function loginUser() {
   const email = document.getElementById("field-email").value.trim();
   const password = document.getElementById("field-password").value;
 
   if (!email || !password) {
-    showModalError("Email and password are required");
+    showModalError("Вкажіть email і пароль");
     return;
   }
 
   showModalLoading(true);
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ username: email, password }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(formatApiError(data, "Login failed"));
-    }
-
-    const data = await res.json();
-    const userRes = await fetch(`${API_BASE}/users/me`, {
-      headers: { Authorization: `Bearer ${data.access_token}` },
-    });
-    if (!userRes.ok) throw new Error("Could not load profile");
-    const user = await userRes.json();
-
-    saveUserSession(user, data.access_token, data.refresh_token);
+    const user = await signInWithCredentials(email, password);
     closeModal();
     clearAuthForm();
-    showToast(`Welcome, ${user.full_name}!`);
+    showToast(`Вітаємо, ${user.full_name}!`);
     loadBooks();
 
     if (canUseStaffPanel()) {
@@ -223,23 +300,38 @@ async function loginUser() {
 // ========================================
 
 async function loadBooks(genre = "") {
+  currentGenreFilter = genre;
   try {
     const res = await fetch(`${API_BASE}/books`, {
       headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : {},
     });
 
-    if (!res.ok) throw new Error("Failed to load books");
+    if (!res.ok) throw new Error("Не вдалося завантажити книги");
 
-    const books = await res.json();
-    const filtered = genre ? books.filter((b) => b.book_type === genre) : books;
+    allBooks = await res.json();
 
-    renderBooksGrid(filtered);
+    renderBooksGrid(getFilteredBooks());
     updateStats();
   } catch (error) {
     console.error("Error loading books:", error);
     document.getElementById("books-grid").innerHTML =
-      '<p style="grid-column: 1/-1;">Error loading books. Please try again.</p>';
+      '<p style="grid-column: 1/-1;">Не вдалося завантажити книги. Спробуйте ще раз.</p>';
   }
+}
+
+function getFilteredBooks() {
+  const query = currentSearchQuery.trim().toLowerCase();
+  return allBooks.filter((book) => {
+    const matchesGenre = currentGenreFilter ? book.book_type === currentGenreFilter : true;
+    const searchable = [
+      book.title,
+      book.author,
+      book.book_type,
+      bookTypeLabel(book.book_type),
+    ].join(" ").toLowerCase();
+    const matchesSearch = query ? searchable.includes(query) : true;
+    return matchesGenre && matchesSearch;
+  });
 }
 
 function renderBooksGrid(books) {
@@ -247,48 +339,41 @@ function renderBooksGrid(books) {
   grid.innerHTML = "";
 
   if (books.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1;">No books found in this genre.</p>';
+    grid.innerHTML = '<p style="grid-column: 1/-1;">Книг за цим запитом не знайдено.</p>';
     return;
   }
 
-  books.forEach((book) => {
-    const genreIcon = getGenreIcon(book.book_type);
+  books.forEach((book, index) => {
     const card = document.createElement("div");
     card.className = "book-card";
     card.innerHTML = `
-      <div class="book-cover" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div style="color: white; font-size: 2.5em; display: flex; align-items: center; justify-content: center; height: 100%;">
-          ${genreIcon}
-        </div>
+      <div class="book-cover" style="background: ${coverColor(book, index)};">
+        <div class="book-cover-title">${escapeHtml(book.title)}</div>
       </div>
       <div class="book-title">${escapeHtml(book.title)}</div>
       <div class="book-author">${escapeHtml(book.author)}</div>
       <div class="book-meta">
-        <span>${escapeHtml(book.book_type)}</span>
-        <span>${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)} available</span>
+        <span>${escapeHtml(bookTypeLabel(book.book_type))}</span>
+        <span>${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)} доступно</span>
       </div>
       ${
         currentUser && book.available_qty > 0
-          ? `<button class="btn-primary" onclick="openBorrowModal('${escapeJsAttr(book.id)}', '${escapeJsAttr(book.title)}')">Borrow</button>`
+          ? `<button class="btn-primary" onclick="openBorrowModal('${escapeJsAttr(book.id)}', '${escapeJsAttr(book.title)}')">Взяти</button>`
           : book.available_qty === 0
-            ? `<button class="btn-primary" disabled>Unavailable</button>`
-            : `<button class="btn-primary" onclick="openModal('login')">Sign In to Borrow</button>`
+            ? `<button class="btn-primary" disabled>Недоступно</button>`
+            : `<button class="btn-primary" onclick="openModal('login')">Увійдіть, щоб взяти</button>`
       }
     `;
     grid.appendChild(card);
   });
 }
 
-function getGenreIcon(genre) {
-  const icons = { fantasy: "🔮", criminal: "🔍", drama: "🎭" };
-  return icons[genre] || "📚";
-}
-
-function filterByGenre(genre) {
+function filterByGenre(genre, btn) {
+  currentGenreFilter = genre;
   const buttons = document.querySelectorAll(".genre-btn");
-  buttons.forEach((btn) => btn.classList.remove("active"));
-  event.target.classList.add("active");
-  loadBooks(genre);
+  buttons.forEach((button) => button.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  renderBooksGrid(getFilteredBooks());
 }
 
 // ========================================
@@ -304,7 +389,7 @@ function openBorrowModal(bookId, bookTitle) {
   }
 
   currentBorrowBook = bookId;
-  document.getElementById("borrow-modal-title").textContent = `Borrow "${bookTitle}"`;
+  document.getElementById("borrow-modal-title").textContent = `Взяти "${bookTitle}"`;
   document.getElementById("borrow-qty").value = 1;
   document.getElementById("borrow-days").value = 14;
   updateBorrowPreview();
@@ -320,7 +405,7 @@ function updateBorrowPreview() {
   const days = parseInt(document.getElementById("borrow-days").value);
   const due = new Date();
   due.setDate(due.getDate() + days);
-  document.getElementById("borrow-due-preview").textContent = `Due by ${due.toLocaleDateString()}`;
+  document.getElementById("borrow-due-preview").textContent = `Повернути до ${formatDate(due)}`;
 }
 
 async function submitBorrow() {
@@ -328,7 +413,7 @@ async function submitBorrow() {
   const days = parseInt(document.getElementById("borrow-days").value);
 
   if (qty < 1 || days < 1) {
-    alert("Invalid quantity or days");
+    alert("Вкажіть коректну кількість і термін користування");
     return;
   }
 
@@ -348,15 +433,15 @@ async function submitBorrow() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.detail || "Borrow failed");
+      throw new Error(formatApiError(data, "Не вдалося взяти книгу"));
     }
 
-    showToast("Book borrowed successfully!");
+    showToast("Книгу успішно додано до ваших записів");
     closeBorrowModal();
     loadBooks();
     loadUserBorrows();
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
@@ -364,17 +449,31 @@ async function loadUserBorrows() {
   if (!currentUser) return;
 
   try {
+    await ensureBooksLoaded();
+
     const res = await fetch(`${API_BASE}/borrows/me`, {
       headers: { Authorization: `Bearer ${currentToken}` },
     });
 
-    if (!res.ok) throw new Error("Failed to load borrows");
+    if (!res.ok) throw new Error("Не вдалося завантажити список книг");
 
     const borrows = await res.json();
-    renderBorrowsList(borrows);
+    renderBorrowsList(filterBorrowRecords(borrows));
   } catch (error) {
     console.error("Error loading borrows:", error);
   }
+}
+
+function filterBorrowRecords(borrows) {
+  if (currentBorrowFilter === "returned") {
+    return borrows.filter((borrow) => borrow.returned);
+  }
+
+  if (currentBorrowFilter === "active") {
+    return borrows.filter((borrow) => !borrow.returned);
+  }
+
+  return borrows;
 }
 
 function renderBorrowsList(borrows) {
@@ -382,28 +481,43 @@ function renderBorrowsList(borrows) {
   list.innerHTML = "";
 
   if (borrows.length === 0) {
-    list.innerHTML = "<p>You haven't borrowed any books yet.</p>";
+    const emptyMessage = currentBorrowFilter === "returned"
+      ? "У вас ще немає повернених книг."
+      : currentBorrowFilter === "active"
+        ? "У вас немає активних книг."
+        : "Ви ще не брали книги.";
+    list.innerHTML = `<p>${emptyMessage}</p>`;
     return;
   }
 
   borrows.forEach((borrow) => {
+    const book = findBookById(borrow.book_id);
+    const bookTitle = book?.title || `Книга ${borrow.book_id.slice(0, 8)}`;
+    const bookAuthor = book?.author || "Дані книги недоступні";
+    const bookIdMeta = book ? "" : `<div class="borrow-id">ID книги: ${escapeHtml(borrow.book_id)}</div>`;
     const isOverdue = new Date() > new Date(borrow.due_date);
     const item = document.createElement("div");
     item.className = `borrow-item ${borrow.returned ? "returned" : ""} ${isOverdue ? "overdue" : ""}`;
     item.innerHTML = `
       <div class="borrow-info">
-        <div class="borrow-title">${escapeHtml(borrow.book_type)} / ${escapeHtml(borrow.book_id)}</div>
-        <div class="borrow-dates">
-          Borrowed: ${new Date(borrow.date_taken).toLocaleDateString()} |
-          Due: ${new Date(borrow.due_date).toLocaleDateString()}
-          ${isOverdue ? " <span style='color: red;'>(OVERDUE)</span>" : ""}
+        <div class="borrow-title">${escapeHtml(bookTitle)}</div>
+        <div class="book-author">${escapeHtml(bookAuthor)}</div>
+        <div class="borrow-book-meta">
+          ${escapeHtml(bookTypeLabel(borrow.book_type))} |
+          Термін: ${escapeHtml(borrow.days)} дн. |
+          Кількість: ${escapeHtml(borrow.quantity)}
         </div>
-        <div class="borrow-qty">Qty: ${escapeHtml(borrow.quantity)}</div>
+        <div class="borrow-dates">
+          Взято: ${formatDate(borrow.date_taken)} |
+          Повернути до: ${formatDate(borrow.due_date)}
+          ${isOverdue ? " <span style='color: red;'>(прострочено)</span>" : ""}
+        </div>
+        ${bookIdMeta}
       </div>
       ${
         !borrow.returned
-          ? `<button class="btn-small" onclick="submitReturnBook('${borrow.id}')">Return</button>`
-          : `<span class="badge-returned">Returned</span>`
+          ? `<button class="btn-small" onclick="submitReturnBook('${borrow.id}')">Повернути</button>`
+          : `<span class="badge-returned">Повернено</span>`
       }
     `;
     list.appendChild(item);
@@ -417,13 +531,13 @@ async function submitReturnBook(borrowId) {
       headers: { Authorization: `Bearer ${currentToken}` },
     });
 
-    if (!res.ok) throw new Error("Return failed");
+    if (!res.ok) throw new Error("Не вдалося повернути книгу");
 
-    showToast("Book returned successfully!");
+    showToast("Книгу повернено");
     loadUserBorrows();
     loadBooks();
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
@@ -435,17 +549,12 @@ async function loadUserProfile() {
   if (!currentUser) return;
 
   const profileHtml = `
-    <div style="padding: 20px;">
-      <h3>Profile Information</h3>
-      <p><strong>Name:</strong> ${escapeHtml(currentUser.full_name)}</p>
-      <p><strong>Email:</strong> ${escapeHtml(currentUser.email)}</p>
-      <p><strong>Phone:</strong> ${escapeHtml(currentUser.phone)}</p>
-      <p><strong>Address:</strong> ${escapeHtml(currentUser.address)}</p>
-      <p><strong>Date of Birth:</strong> ${escapeHtml(currentUser.date_of_birth)}</p>
-      <p><strong>Role:</strong> <span class="role-badge">${escapeHtml(currentUser.role)}</span></p>
-      <button class="btn-small" onclick="openEditProfile()">Edit Profile</button>
-      <button class="btn-small" style="background: #dc3545;" onclick="confirmDeleteAccount()">Delete Account (GDPR)</button>
-    </div>
+    <p><strong>ПІБ:</strong> ${escapeHtml(currentUser.full_name)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(currentUser.email)}</p>
+    <p><strong>Телефон:</strong> ${escapeHtml(currentUser.phone)}</p>
+    <p><strong>Адреса:</strong> ${escapeHtml(currentUser.address)}</p>
+    <p><strong>Дата народження:</strong> ${escapeHtml(currentUser.date_of_birth)}</p>
+    <p><strong>Роль:</strong> <span class="role-badge">${escapeHtml(roleLabel(currentUser.role))}</span></p>
   `;
 
   document.getElementById("profile-details").innerHTML = profileHtml;
@@ -468,8 +577,10 @@ function closeEditProfile() {
 async function submitEditProfile() {
   const updates = {
     full_name: document.getElementById("edit-name").value,
+    email: document.getElementById("edit-email").value,
     phone: document.getElementById("edit-phone").value,
     address: document.getElementById("edit-address").value,
+    date_of_birth: document.getElementById("edit-dob").value,
   };
 
   try {
@@ -482,20 +593,20 @@ async function submitEditProfile() {
       body: JSON.stringify(updates),
     });
 
-    if (!res.ok) throw new Error("Update failed");
+    if (!res.ok) throw new Error("Не вдалося оновити профіль");
 
     const updated = await res.json();
     saveUserSession(updated, currentToken, refreshToken);
     closeEditProfile();
     loadUserProfile();
-    showToast("Profile updated successfully!");
+    showToast("Профіль оновлено");
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
 function confirmDeleteAccount() {
-  if (confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+  if (confirm("Ви точно хочете видалити акаунт? Цю дію неможливо скасувати.")) {
     deleteAccount();
   }
 }
@@ -507,12 +618,12 @@ async function deleteAccount() {
       headers: { Authorization: `Bearer ${currentToken}` },
     });
 
-    if (!res.ok) throw new Error("Deletion failed");
+    if (!res.ok) throw new Error("Не вдалося видалити акаунт");
 
-    showToast("Your account has been deleted.");
+    showToast("Ваш акаунт видалено.");
     logout();
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
@@ -547,13 +658,13 @@ async function loadAdminUsers() {
       const item = document.createElement("div");
       item.className = "admin-list-item";
       const deleteButton = isAdmin()
-        ? `<button class="btn-danger-sm" onclick="adminDeleteUser('${escapeJsAttr(user.id)}')">Delete</button>`
+        ? `<button class="btn-danger-sm" onclick="adminDeleteUser('${escapeJsAttr(user.id)}')">Видалити</button>`
         : "";
       item.innerHTML = `
         <div>
-          <strong>User ID: ${escapeHtml(user.id)}</strong><br/>
-          <small>Personal data hidden by policy</small><br/>
-          <span class="role-badge">${escapeHtml(user.role)}</span>
+          <strong>ID користувача: ${escapeHtml(user.id)}</strong><br/>
+          <small>Персональні дані приховано політикою доступу</small><br/>
+          <span class="role-badge">${escapeHtml(roleLabel(user.role))}</span>
         </div>
         ${deleteButton}
       `;
@@ -578,15 +689,15 @@ async function loadAdminBooks() {
       const item = document.createElement("div");
       item.className = "admin-list-item";
       const editButton = isAdmin()
-        ? `<button class="btn-small" onclick="openEditBookModal('${escapeJsAttr(book.id)}')">Edit</button>`
+        ? `<button class="btn-small" onclick="openEditBookModal('${escapeJsAttr(book.id)}')">Редагувати</button>`
         : "";
       const deleteButton = isAdmin()
-        ? `<button class="btn-danger-sm" onclick="adminDeleteBook('${escapeJsAttr(book.id)}')">Delete</button>`
+        ? `<button class="btn-danger-sm" onclick="adminDeleteBook('${escapeJsAttr(book.id)}')">Видалити</button>`
         : "";
       item.innerHTML = `
         <div>
-          <strong>${escapeHtml(book.title)}</strong> by ${escapeHtml(book.author)}<br/>
-          <small>${escapeHtml(book.book_type)} | ${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)}</small>
+          <strong>${escapeHtml(book.title)}</strong>, ${escapeHtml(book.author)}<br/>
+          <small>${escapeHtml(bookTypeLabel(book.book_type))} | ${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)}</small>
         </div>
         ${editButton}
         ${deleteButton}
@@ -609,7 +720,7 @@ async function loadAdminOverdue() {
     const list = document.getElementById("admin-overdue-list");
     list.innerHTML = "";
     if (borrows.length === 0) {
-      list.innerHTML = "<p>No overdue books</p>";
+      list.innerHTML = "<p>Немає прострочених книг</p>";
       return;
     }
     borrows.forEach((borrow) => {
@@ -617,9 +728,9 @@ async function loadAdminOverdue() {
       item.className = "admin-list-item overdue";
       item.innerHTML = `
         <div>
-          <strong>${escapeHtml(borrow.book_type)} / ${escapeHtml(borrow.book_id)}</strong><br/>
-          <small>User: ${escapeHtml(borrow.user_id)}</small><br/>
-          <small>Due: ${new Date(borrow.due_date).toLocaleDateString()}</small>
+          <strong>${escapeHtml(bookTypeLabel(borrow.book_type))} / ${escapeHtml(borrow.book_id)}</strong><br/>
+          <small>Користувач: ${escapeHtml(borrow.user_id)}</small><br/>
+          <small>Повернути до: ${formatDate(borrow.due_date)}</small>
         </div>
       `;
       list.appendChild(item);
@@ -632,7 +743,8 @@ async function loadAdminOverdue() {
 function openAddBookModal() {
   editingBookId = null;
   document.getElementById("add-book-error").style.display = "none";
-  document.getElementById("add-book-modal-title").textContent = "Add Book";
+  document.getElementById("add-book-modal-title").textContent = "Додати книгу";
+  document.getElementById("book-submit-btn").textContent = "Додати книгу";
   document.getElementById("book-title").value = "";
   document.getElementById("book-author").value = "";
   document.getElementById("book-genre").value = "fantasy";
@@ -654,7 +766,7 @@ function showAddBookError(message) {
 
 async function openEditBookModal(bookId) {
   if (!isAdmin()) {
-    showToast("Only administrators can edit books");
+    showToast("Редагувати книги може тільки адміністратор");
     return;
   }
 
@@ -665,13 +777,14 @@ async function openEditBookModal(bookId) {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, "Failed to load book"));
+      throw new Error(formatApiError(data, "Не вдалося завантажити книгу"));
     }
 
     const book = await res.json();
     editingBookId = book.id;
     document.getElementById("add-book-error").style.display = "none";
-    document.getElementById("add-book-modal-title").textContent = "Edit Book";
+    document.getElementById("add-book-modal-title").textContent = "Редагувати книгу";
+    document.getElementById("book-submit-btn").textContent = "Зберегти зміни";
     document.getElementById("book-title").value = book.title;
     document.getElementById("book-author").value = book.author;
     document.getElementById("book-genre").value = book.book_type;
@@ -685,7 +798,7 @@ async function openEditBookModal(bookId) {
 
 function openCreateUserModal() {
   if (!isAdmin()) {
-    showToast("Only administrators can create users");
+    showToast("Створювати користувачів може тільки адміністратор");
     return;
   }
   document.getElementById("create-user-error").style.display = "none";
@@ -724,7 +837,7 @@ async function submitCreateUser() {
   };
 
   if (!payload.full_name || !payload.date_of_birth || !payload.address || !payload.phone || !payload.email || !payload.password) {
-    showCreateUserError("All fields are required");
+    showCreateUserError("Заповніть усі поля");
     return;
   }
 
@@ -740,10 +853,10 @@ async function submitCreateUser() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, "Failed to create user"));
+      throw new Error(formatApiError(data, "Не вдалося створити користувача"));
     }
 
-    showToast("User created");
+    showToast("Користувача створено");
     clearCreateUserForm();
     closeCreateUserModal();
     loadAdminUsers();
@@ -760,12 +873,12 @@ async function submitAddBook() {
   const available = parseInt(document.getElementById("book-available").value);
 
   if (!title || !author || Number.isNaN(total) || Number.isNaN(available) || total < 1 || available < 0) {
-    showAddBookError("Please fill in all required fields with valid quantities");
+    showAddBookError("Заповніть усі поля та вкажіть коректну кількість");
     return;
   }
 
   if (available > total) {
-    showAddBookError("Available copies cannot exceed total copies");
+    showAddBookError("Доступна кількість не може бути більшою за загальну");
     return;
   }
 
@@ -788,10 +901,10 @@ async function submitAddBook() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, isEditing ? "Failed to update book" : "Failed to add book"));
+      throw new Error(formatApiError(data, isEditing ? "Не вдалося оновити книгу" : "Не вдалося додати книгу"));
     }
 
-    showToast(isEditing ? "Book updated successfully!" : "Book added successfully!");
+    showToast(isEditing ? "Книгу оновлено" : "Книгу додано");
     closeAddBookModal();
     loadAdminBooks();
     loadBooks();
@@ -807,7 +920,7 @@ async function submitAddBook() {
 
 async function sendOverdueNotifications(useSms) {
   if (!canUseStaffPanel()) {
-    showToast("Only staff roles can send reminders");
+    showToast("Нагадування може надсилати тільки персонал");
     return;
   }
 
@@ -819,11 +932,11 @@ async function sendOverdueNotifications(useSms) {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, "Failed to send reminders"));
+      throw new Error(formatApiError(data, "Не вдалося надіслати нагадування"));
     }
 
     const data = await res.json();
-    showToast(`${data.notified} overdue reminder record(s) processed`);
+    showToast(`Опрацьовано прострочених записів: ${data.notified}`);
     loadAdminOverdue();
     updateStats();
   } catch (error) {
@@ -832,7 +945,7 @@ async function sendOverdueNotifications(useSms) {
 }
 
 async function adminDeleteUser(userId) {
-  if (!confirm("Are you sure you want to delete this user?")) return;
+  if (!confirm("Ви точно хочете видалити цього користувача?")) return;
 
   try {
     const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
@@ -840,16 +953,16 @@ async function adminDeleteUser(userId) {
       headers: { Authorization: `Bearer ${currentToken}` },
     });
 
-    if (!res.ok) throw new Error();
-    showToast("User deleted");
+    if (!res.ok) throw new Error("Не вдалося видалити користувача");
+    showToast("Користувача видалено");
     loadAdminUsers();
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
 async function adminDeleteBook(bookId) {
-  if (!confirm("Are you sure you want to delete this book?")) return;
+  if (!confirm("Ви точно хочете видалити цю книгу?")) return;
 
   try {
     const res = await fetch(`${API_BASE}/books/${bookId}`, {
@@ -857,12 +970,12 @@ async function adminDeleteBook(bookId) {
       headers: { Authorization: `Bearer ${currentToken}` },
     });
 
-    if (!res.ok) throw new Error();
-    showToast("Book deleted");
+    if (!res.ok) throw new Error("Не вдалося видалити книгу");
+    showToast("Книгу видалено");
     loadAdminBooks();
     loadBooks();
   } catch (error) {
-    alert("Error: " + error.message);
+    alert("Помилка: " + error.message);
   }
 }
 
@@ -876,19 +989,23 @@ function updateAuthUI() {
   const userName = document.getElementById("nav-user-name");
   const roleBadge = document.getElementById("nav-role-badge");
   const myBorrowsNav = document.getElementById("nav-my-borrows");
+  const profileNav = document.getElementById("nav-profile");
   const adminNav = document.getElementById("nav-admin");
+  const heroSignupBtn = document.getElementById("hero-signup-btn");
 
   if (currentUser) {
     loginBtn.style.display = "none";
     logoutBtn.style.display = "block";
+    if (heroSignupBtn) heroSignupBtn.style.display = "none";
     userName.textContent = currentUser.full_name;
     userName.style.display = "inline";
-    roleBadge.textContent = currentUser.role;
+    roleBadge.textContent = roleLabel(currentUser.role);
     roleBadge.style.display = "inline-block";
     myBorrowsNav.style.display = "block";
+    if (profileNav) profileNav.style.display = "block";
 
     if (canUseStaffPanel()) {
-      adminNav.querySelector("a").textContent = isAdmin() ? "Admin" : "Staff";
+      adminNav.querySelector("a").textContent = isAdmin() ? "Адмін" : "Персонал";
       adminNav.style.display = "block";
     } else {
       adminNav.style.display = "none";
@@ -899,9 +1016,11 @@ function updateAuthUI() {
   } else {
     loginBtn.style.display = "block";
     logoutBtn.style.display = "none";
+    if (heroSignupBtn) heroSignupBtn.style.display = "";
     userName.style.display = "none";
     roleBadge.style.display = "none";
     myBorrowsNav.style.display = "none";
+    if (profileNav) profileNav.style.display = "none";
     adminNav.style.display = "none";
   }
 }
@@ -910,17 +1029,17 @@ function openModal(type) {
   if (type === "login") {
     document.getElementById("mtab-login").classList.add("active");
     document.getElementById("mtab-signup").classList.remove("active");
-    document.getElementById("modal-title").textContent = "Welcome back";
-    document.getElementById("modal-sub").textContent = "Sign in to your Readly account.";
-    document.getElementById("modal-submit-btn").textContent = "Sign In";
+    document.getElementById("modal-title").textContent = "Вхід";
+    document.getElementById("modal-sub").textContent = "Увійдіть у свій акаунт Readly.";
+    document.getElementById("modal-submit-btn").textContent = "Увійти";
     document.querySelectorAll(".signup-only").forEach((el) => (el.style.display = "none"));
     document.getElementById("m-remember-row").style.display = "flex";
   } else {
     document.getElementById("mtab-login").classList.remove("active");
     document.getElementById("mtab-signup").classList.add("active");
-    document.getElementById("modal-title").textContent = "Create Account";
-    document.getElementById("modal-sub").textContent = "Join Readly to start borrowing.";
-    document.getElementById("modal-submit-btn").textContent = "Create Account";
+    document.getElementById("modal-title").textContent = "Створити акаунт";
+    document.getElementById("modal-sub").textContent = "Зареєструйтеся, щоб брати книги.";
+    document.getElementById("modal-submit-btn").textContent = "Створити акаунт";
     document.querySelectorAll(".signup-only").forEach((el) => (el.style.display = "block"));
     document.getElementById("m-remember-row").style.display = "none";
   }
@@ -978,7 +1097,7 @@ function showToast(message) {
 }
 
 function showPanel(panelName) {
-  const panels = ["home", "borrows", "admin"];
+  const panels = ["home", "borrows", "profile", "admin"];
   panels.forEach((p) => {
     const el = document.getElementById(`panel-${p}`);
     if (el) el.style.display = p === panelName ? "block" : "none";
@@ -998,12 +1117,17 @@ function showPanel(panelName) {
     loadUserBorrows();
   }
 
+  if (panelName === "profile" && currentUser) {
+    loadUserProfile();
+  }
+
   if (panelName === "admin" && canUseStaffPanel()) {
     loadAdminPanel();
   }
 }
 
 function filterBorrows(filter, btn) {
+  currentBorrowFilter = filter;
   const buttons = document.querySelectorAll(".borrow-tab");
   buttons.forEach((b) => b.classList.remove("active"));
   btn.classList.add("active");
@@ -1028,9 +1152,30 @@ async function updateStats() {
 }
 
 function setupEventListeners() {
-  document.getElementById("borrow-days").addEventListener("change", updateBorrowPreview);
-  document.getElementById("searchBtn")?.addEventListener("click", () => {
-    const query = document.getElementById("searchInput")?.value || "";
-    loadBooks();
+  document.getElementById("borrow-days")?.addEventListener("change", updateBorrowPreview);
+  const searchInput = document.getElementById("search-input");
+  if (!searchInput) return;
+
+  function clearSearchIfAutofilled() {
+    if (!looksLikeEmail(searchInput.value)) return;
+    searchInput.value = "";
+    currentSearchQuery = "";
+    renderBooksGrid(getFilteredBooks());
+  }
+
+  currentSearchQuery = "";
+  searchInput.value = "";
+  searchInput.name = `catalog_filter_${Date.now()}`;
+  searchInput.setAttribute("autocomplete", "off");
+  searchInput.addEventListener("pointerdown", () => searchInput.removeAttribute("readonly"), { once: true });
+  searchInput.addEventListener("keydown", () => searchInput.removeAttribute("readonly"), { once: true });
+  [50, 250, 800, 1600].forEach((delay) => setTimeout(clearSearchIfAutofilled, delay));
+  searchInput.addEventListener("input", (event) => {
+    if (looksLikeEmail(event.target.value)) {
+      clearSearchIfAutofilled();
+      return;
+    }
+    currentSearchQuery = event.target.value;
+    renderBooksGrid(getFilteredBooks());
   });
 }
