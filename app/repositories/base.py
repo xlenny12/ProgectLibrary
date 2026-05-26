@@ -39,11 +39,15 @@ class FileRepository(Generic[T]):
         return [l for l in decrypt(path.read_bytes()).splitlines() if l.strip()]
 
     def _write_all_lines(self, lines: list[str]) -> None:
-        self._get_path().write_bytes(encrypt("\n".join(lines)))
+        path = self._get_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(encrypt("\n".join(lines)))
 
     def _iter_records(self) -> Iterator[T]:
         for line in self._read_all_lines():
             parts = line.split("|")
+            if len(parts) < 2:
+                raise ValueError("Corrupted storage record.")
             if parts[0] == self.RECORD_TYPE:
                 yield self._from_line(parts[1:])
 

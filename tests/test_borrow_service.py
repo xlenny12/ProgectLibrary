@@ -17,7 +17,8 @@ def _setup():
 
 def test_borrow_decrements_qty():
     borrow_svc, book = _setup()
-    borrow_svc.borrow("user-1", BorrowCreate(book_id=book.id, days=7, quantity=2))
+    record = borrow_svc.borrow("user-1", BorrowCreate(book_id=book.id, days=7, quantity=2))
+    assert record.book_type == BookType.FANTASY
     book_svc = BookService()
     updated = book_svc.get(book.id)
     assert updated.available_qty == 1
@@ -67,3 +68,4 @@ def test_gdpr_delete_removes_borrows():
     count = borrow_svc.delete_all_for_user("user-42", actor_id="user-42")
     assert count == 1
     assert borrow_svc.my_borrows("user-42") == []
+    assert BookService().get(book.id).available_qty == 3

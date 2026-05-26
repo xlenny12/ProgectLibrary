@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.dependencies import get_current_user, require_role
+from app.dependencies import require_role
 from app.models.book import BookCreate, BookPublic, BookUpdate
 from app.models.user import UserInDB, Role
 from app.services.book_service import BookService
@@ -8,10 +8,10 @@ router = APIRouter(prefix="/api/books", tags=["books"])
 
 
 @router.get("", response_model=list[BookPublic])
-def list_books(_: UserInDB = Depends(get_current_user)):
+def list_books():
     """List all books in the catalog.
     
-    Requires authentication. Any authenticated user can view books.
+    Public catalog endpoint. Borrowing still requires authentication.
     
     Returns: List of all books with ID, title, author, type, and quantities
     """
@@ -19,10 +19,10 @@ def list_books(_: UserInDB = Depends(get_current_user)):
 
 
 @router.get("/{book_id}", response_model=BookPublic)
-def get_book(book_id: str, _: UserInDB = Depends(get_current_user)):
+def get_book(book_id: str):
     """Get details of a specific book.
     
-    Requires authentication.
+    Public catalog endpoint. Borrowing still requires authentication.
     
     Args: book_id - UUID of the book
     Returns: Book details or 404 if not found

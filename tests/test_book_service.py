@@ -48,3 +48,13 @@ def test_delete_book():
 def test_negative_qty_rejected():
     with pytest.raises(ValueError):
         _make_book(available_qty=-1)
+
+
+def test_available_cannot_exceed_total():
+    with pytest.raises(ValueError):
+        _make_book(total_qty=2, available_qty=3)
+
+
+def test_book_delimiter_rejected():
+    with pytest.raises(ValueError):
+        _make_book(title="Bad|Title")

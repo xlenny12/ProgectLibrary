@@ -52,9 +52,9 @@ def delete_me(current_user: UserInDB = Depends(get_current_user)):
 def list_users(_=Depends(require_role(Role.ADMIN, Role.ADVANCED))):
     """List all users (limited public info).
     
-    Admin and Advanced users only. Returns name and role only (no personal data).
+    Admin and Advanced users only. Returns user id and role only (no personal data).
     
-    Returns: List of all users (ID, full name, role)
+    Returns: List of all users (ID, role)
     Raises: 403 if insufficient permissions
     """
     return UserService().list_public()
@@ -64,7 +64,7 @@ def list_users(_=Depends(require_role(Role.ADMIN, Role.ADVANCED))):
 def get_user(user_id: str, _=Depends(require_role(Role.ADMIN, Role.ADVANCED))):
     """Get a user's public profile.
     
-    Admin and Advanced users only. Returns name and role only.
+    Admin and Advanced users only. Returns ID and role only.
     
     Args: user_id - UUID of the user
     Returns: User (ID, name, role) or 404 if not found

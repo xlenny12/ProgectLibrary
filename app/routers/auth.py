@@ -4,7 +4,7 @@ from fastapi import Depends
 from pydantic import BaseModel
 from app.services.user_service import UserService
 from app.core.security import create_access_token, create_refresh_token, decode_token
-from app.models.user import UserCreate
+from app.models.user import UserRegistration
 from app.models.user import UserSelf
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -17,7 +17,7 @@ class TokenResponse(BaseModel):
 
 
 @router.post("/register", response_model=UserSelf, status_code=status.HTTP_201_CREATED)
-def register(data: UserCreate):
+def register(data: UserRegistration):
     """Register a new user account.
     
     Anyone can register. New users default to 'User' role.
