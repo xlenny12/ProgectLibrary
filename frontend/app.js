@@ -7,6 +7,7 @@ const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000/
 let currentUser = null;
 let currentToken = null;
 let refreshToken = null;
+let editingBookId = null;
 
 function isAdmin() {
   return currentUser?.role === "Administrator";
@@ -576,6 +577,9 @@ async function loadAdminBooks() {
     books.forEach((book) => {
       const item = document.createElement("div");
       item.className = "admin-list-item";
+      const editButton = isAdmin()
+        ? `<button class="btn-small" onclick="openEditBookModal('${escapeJsAttr(book.id)}')">Edit</button>`
+        : "";
       const deleteButton = isAdmin()
         ? `<button class="btn-danger-sm" onclick="adminDeleteBook('${escapeJsAttr(book.id)}')">Delete</button>`
         : "";
@@ -584,6 +588,7 @@ async function loadAdminBooks() {
           <strong>${escapeHtml(book.title)}</strong> by ${escapeHtml(book.author)}<br/>
           <small>${escapeHtml(book.book_type)} | ${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)}</small>
         </div>
+        ${editButton}
         ${deleteButton}
       `;
       list.appendChild(item);
@@ -625,11 +630,19 @@ async function loadAdminOverdue() {
 }
 
 function openAddBookModal() {
+  editingBookId = null;
   document.getElementById("add-book-error").style.display = "none";
+  document.getElementById("add-book-modal-title").textContent = "Add Book";
+  document.getElementById("book-title").value = "";
+  document.getElementById("book-author").value = "";
+  document.getElementById("book-genre").value = "fantasy";
+  document.getElementById("book-total").value = 1;
+  document.getElementById("book-available").value = 1;
   document.getElementById("add-book-modal-overlay").style.display = "flex";
 }
 
 function closeAddBookModal() {
+  editingBookId = null;
   document.getElementById("add-book-modal-overlay").style.display = "none";
 }
 
@@ -637,6 +650,37 @@ function showAddBookError(message) {
   const errorDiv = document.getElementById("add-book-error");
   errorDiv.textContent = message;
   errorDiv.style.display = "block";
+}
+
+async function openEditBookModal(bookId) {
+  if (!isAdmin()) {
+    showToast("Only administrators can edit books");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/books/${bookId}`, {
+      headers: { Authorization: `Bearer ${currentToken}` },
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(formatApiError(data, "Failed to load book"));
+    }
+
+    const book = await res.json();
+    editingBookId = book.id;
+    document.getElementById("add-book-error").style.display = "none";
+    document.getElementById("add-book-modal-title").textContent = "Edit Book";
+    document.getElementById("book-title").value = book.title;
+    document.getElementById("book-author").value = book.author;
+    document.getElementById("book-genre").value = book.book_type;
+    document.getElementById("book-total").value = book.total_qty;
+    document.getElementById("book-available").value = book.available_qty;
+    document.getElementById("add-book-modal-overlay").style.display = "flex";
+  } catch (error) {
+    showToast(error.message);
+  }
 }
 
 function openCreateUserModal() {
@@ -726,8 +770,9 @@ async function submitAddBook() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/books`, {
-      method: "POST",
+    const isEditing = Boolean(editingBookId);
+    const res = await fetch(`${API_BASE}/books${isEditing ? `/${editingBookId}` : ""}`, {
+      method: isEditing ? "PATCH" : "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${currentToken}`,
@@ -743,10 +788,10 @@ async function submitAddBook() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(formatApiError(data, "Failed to add book"));
+      throw new Error(formatApiError(data, isEditing ? "Failed to update book" : "Failed to add book"));
     }
 
-    showToast("Book added successfully!");
+    showToast(isEditing ? "Book updated successfully!" : "Book added successfully!");
     closeAddBookModal();
     loadAdminBooks();
     loadBooks();
