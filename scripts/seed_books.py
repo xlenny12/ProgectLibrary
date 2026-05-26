@@ -44,9 +44,21 @@ SAMPLE_BOOKS = [
 def seed_books() -> None:
     get_settings().ensure_data_dir()
     service = BookService()
+    existing_keys = {
+        (book.title.casefold(), book.author.casefold(), book.book_type)
+        for book in service.list_all()
+    }
 
     print(f"Seeding {len(SAMPLE_BOOKS)} books...")
+    created_count = 0
+    skipped_count = 0
     for title, author, book_type, total_qty in SAMPLE_BOOKS:
+        key = (title.casefold(), author.casefold(), book_type)
+        if key in existing_keys:
+            skipped_count += 1
+            print(f"  skipped {title} ({book_type.value}) - already present")
+            continue
+
         book = service.create(
             BookCreate(
                 title=title,
@@ -57,9 +69,11 @@ def seed_books() -> None:
             ),
             actor_id="system",
         )
+        existing_keys.add(key)
+        created_count += 1
         print(f"  created {book.title} ({book.book_type.value}) - {book.total_qty} copies")
 
-    print(f"\nSuccessfully seeded {len(SAMPLE_BOOKS)} books.")
+    print(f"\nCreated {created_count} books, skipped {skipped_count} existing books.")
     print(f"Total books in library: {len(service.list_all())}")
 
 
