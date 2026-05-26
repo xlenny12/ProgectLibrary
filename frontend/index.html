@@ -1,572 +1,308 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Readly — Your Literary World</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readly - бібліотечна система</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* ── Nav layout fix ─────────────────────────────────────────── */
-    nav {
-      display: flex !important;
-      align-items: center !important;
-      gap: 1.5rem !important;
-      flex-wrap: wrap !important;
-    }
-    .nav-links {
-      display: flex !important;
-      align-items: center !important;
-      gap: 1.5rem !important;
-      list-style: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      flex: 1 !important;
-    }
-    .lang-switcher {
-      display: flex !important;
-      align-items: center !important;
-      gap: 4px !important;
-      background: rgba(0,0,0,0.06) !important;
-      border-radius: 20px !important;
-      padding: 3px !important;
-      flex-shrink: 0 !important;
-      order: 10 !important;
-    }
-    .lang-switcher button {
-      font-size: 11px !important;
-      font-weight: 600 !important;
-      letter-spacing: 0.04em !important;
-      padding: 4px 10px !important;
-      border: none !important;
-      border-radius: 16px !important;
-      background: transparent !important;
-      color: inherit !important;
-      cursor: pointer !important;
-      transition: background 0.18s, color 0.18s !important;
-      line-height: 1 !important;
-    }
-    .lang-switcher button.lang-active {
-      background: #fff !important;
-      color: #222 !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
-    }
-    .search-container { order: 9 !important; }
-    .nav-cta         { order: 11 !important; }
-  </style>
 </head>
 <body>
+  <div id="toast-container" aria-live="polite"></div>
 
   <nav>
-    <a class="nav-logo" href="#">Readly</a>
+    <a class="nav-logo" href="#" onclick="showPanel('home'); return false;">Readly</a>
     <ul class="nav-links">
-      <li><a href="#books" data-i18n="nav.browse">Browse</a></li>
-      <li><a href="#categories" data-i18n="nav.categories">Categories</a></li>
-      <li><a href="#" data-i18n="nav.newArrivals">New Arrivals</a></li>
-      <li><a href="#" data-i18n="nav.about">About</a></li>
+      <li><a href="#books" onclick="showPanel('home')">Каталог</a></li>
+      <li id="nav-my-borrows" style="display:none"><a href="#" onclick="showPanel('borrows'); return false;">Мої книги</a></li>
+      <li id="nav-profile" style="display:none"><a href="#" onclick="showPanel('profile'); return false;">Профіль</a></li>
+      <li id="nav-admin" style="display:none"><a href="#" onclick="showPanel('admin'); return false;">Адмін</a></li>
     </ul>
-
-    <div class="lang-switcher">
-      <button onclick="setLanguage('en')" id="lang-en" class="lang-active">EN</button>
-      <button onclick="setLanguage('uk')" id="lang-uk">UA</button>
+    <div class="nav-right">
+      <span id="nav-user-name" class="nav-user-name" style="display:none"></span>
+      <span id="nav-role-badge" class="role-badge" style="display:none"></span>
+      <button class="nav-cta" id="nav-auth-btn" onclick="openModal('login')">Увійти</button>
+      <button class="nav-cta nav-cta-logout" id="nav-logout-btn" style="display:none" onclick="logout()">Вийти</button>
     </div>
-
-    <div class="search-container">
-      <select id="genreSelect" class="search-select">
-        <option value="" data-i18n="genre.all">All genres</option>
-        <option value="fantasy" data-i18n="genre.fantasy">Fantasy</option>
-        <option value="sci-fi" data-i18n="genre.scifi">Sci-Fi</option>
-        <option value="romance" data-i18n="genre.romance">Romance</option>
-        <option value="mystery" data-i18n="genre.mystery">Mystery</option>
-        <option value="literary" data-i18n="genre.literary">Literary</option>
-        <option value="non-fiction" data-i18n="genre.nonfiction">Non-fiction</option>
-        <option value="children" data-i18n="genre.children">Children</option>
-        <option value="history" data-i18n="genre.history">History</option>
-      </select>
-
-      <div class="search-input-group">
-        <input type="text" id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search for a book..." class="search-input">
-        <button id="searchBtn" class="search-btn" data-i18n="search.btn">Search</button>
-      </div>
-    </div>
-
-    <button class="nav-cta" onclick="openModal('login')" data-i18n="nav.signIn">Sign In</button>
   </nav>
 
-  <section class="hero">
-    <div class="hero-text">
-      <span class="hero-eyebrow" data-i18n="hero.eyebrow">✦ Your next great read awaits</span>
-      <h1 data-i18n-html="hero.title">Discover <em>stories</em> that move you</h1>
-      <p class="hero-sub" data-i18n="hero.sub">Readly is your curated literary companion — explore thousands of titles across every genre, from timeless classics to today's bestsellers.</p>
-      <div class="hero-actions">
-        <a href="#books" class="btn-primary" data-i18n="hero.browse">Browse Books →</a>
-        <button class="btn-secondary" onclick="openModal('signup')" data-i18n="hero.createAccount">Create Account</button>
+  <main>
+    <section class="hero" id="hero-section">
+      <div class="hero-text">
+        <span class="hero-eyebrow">Онлайн-бібліотека</span>
+        <h1>Знайдіть свою наступну книгу в Readly</h1>
+        <p class="hero-sub">Переглядайте каталог, беріть книги на зручний термін і стежте за поверненнями у власному кабінеті.</p>
+        <div class="hero-actions">
+          <a href="#books" class="btn-primary">Переглянути книги</a>
+          <button class="btn-secondary" id="hero-signup-btn" onclick="openModal('signup')">Створити акаунт</button>
+        </div>
       </div>
-    </div>
-    <div class="hero-visual">
-      <div class="hero-book hb1"></div>
-      <div class="hero-book hb2"></div>
-      <div class="hero-book hb3"></div>
-      <div class="hero-book hb4"></div>
-    </div>
-  </section>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-book hb1"></div>
+        <div class="hero-book hb2"></div>
+        <div class="hero-book hb3"></div>
+        <div class="hero-book hb4"></div>
+      </div>
+    </section>
 
-  <div class="stats-section">
-    <div><div class="stat-num">24,000+</div><div class="stat-label" data-i18n="stats.books">Books available</div></div>
-    <div><div class="stat-num">140+</div><div class="stat-label" data-i18n="stats.genres">Genres & categories</div></div>
-    <div><div class="stat-num">98k</div><div class="stat-label" data-i18n="stats.readers">Happy readers</div></div>
-    <div><div class="stat-num">4.9 ★</div><div class="stat-label" data-i18n="stats.rating">Average rating</div></div>
-  </div>
-
-  <section class="books-section" id="books">
-    <div class="section-label" data-i18n="books.label">Featured picks</div>
-    <div class="section-title" data-i18n="books.title">Books you'll love</div>
-
-    <div class="genre-filter" id="genre-filter">
-      <div class="cat-pill active" data-genre="All"><div class="cat-icon">📚</div><div class="cat-name" data-i18n="genre.all2">All</div></div>
-      <div class="cat-pill" data-genre="Fantasy"><div class="cat-icon">🔮</div><div class="cat-name" data-i18n="genre.fantasy">Fantasy</div></div>
-      <div class="cat-pill" data-genre="Sci-Fi"><div class="cat-icon">🔬</div><div class="cat-name" data-i18n="genre.scifi">Sci-Fi</div></div>
-      <div class="cat-pill" data-genre="Romance"><div class="cat-icon">💘</div><div class="cat-name" data-i18n="genre.romance">Romance</div></div>
-      <div class="cat-pill" data-genre="Detective/Thriller"><div class="cat-icon">🔍</div><div class="cat-name" data-i18n="genre.detective">Detective/Thriller</div></div>
-      <div class="cat-pill" data-genre="Fiction"><div class="cat-icon">📖</div><div class="cat-name" data-i18n="genre.fiction">Fiction</div></div>
-      <div class="cat-pill" data-genre="Non-fiction"><div class="cat-icon">🌿</div><div class="cat-name" data-i18n="genre.nonfiction">Non-fiction</div></div>
-      <div class="cat-pill" data-genre="Children's books"><div class="cat-icon">👶</div><div class="cat-name" data-i18n="genre.children">Children's</div></div>
-      <div class="cat-pill" data-genre="History"><div class="cat-icon">🏛️</div><div class="cat-name" data-i18n="genre.history">History</div></div>
+    <div class="stats-section home-section">
+      <div><div class="stat-num" id="stat-books">0</div><div class="stat-label">Книг у каталозі</div></div>
+      <div><div class="stat-num" id="stat-genres">3</div><div class="stat-label">Жанри</div></div>
+      <div><div class="stat-num" id="stat-borrows">0</div><div class="stat-label">Прострочені книги</div></div>
     </div>
 
-    <div class="books-grid" id="books-grid"></div>
-  </section>
+    <section class="books-section home-section" id="books">
+      <div class="section-label">Каталог</div>
+      <div class="section-title">Доступні книги</div>
+      <div class="search-row">
+        <label class="search-label" for="search-input">Пошук</label>
+        <input id="search-input" class="search-input" type="text" name="catalog_filter_readly" placeholder="Назва, автор або жанр" autocomplete="off" autocapitalize="none" spellcheck="false" aria-autocomplete="none" data-form-type="other" data-lpignore="true" data-1p-ignore="true" readonly />
+      </div>
+      <div class="genre-filter" id="genre-filter">
+        <button class="genre-btn active" onclick="filterByGenre('', this)">Усі</button>
+        <button class="genre-btn" onclick="filterByGenre('fantasy', this)">Фентезі</button>
+        <button class="genre-btn" onclick="filterByGenre('criminal', this)">Кримінальна</button>
+        <button class="genre-btn" onclick="filterByGenre('drama', this)">Драма</button>
+      </div>
+      <div class="books-grid" id="books-grid">
+        <div class="book-card skeleton-card"><div class="book-cover-skeleton"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+        <div class="book-card skeleton-card"><div class="book-cover-skeleton"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+        <div class="book-card skeleton-card"><div class="book-cover-skeleton"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+      </div>
+    </section>
 
-  <section class="categories-section" id="categories">
-    <div class="section-label" data-i18n="cats.label">Explore by genre</div>
-    <div class="section-title" data-i18n="cats.title">What are you in the mood for?</div>
-    <div class="cats-grid">
-      <div class="cat-pill" data-genre="Fantasy"><div class="cat-icon">🔮</div><div class="cat-name" data-i18n="genre.fantasy">Fantasy</div></div>
-      <div class="cat-pill" data-genre="Sci-Fi"><div class="cat-icon">🔬</div><div class="cat-name" data-i18n="genre.scifi">Sci-Fi</div></div>
-      <div class="cat-pill" data-genre="Romance"><div class="cat-icon">💘</div><div class="cat-name" data-i18n="genre.romance">Romance</div></div>
-      <div class="cat-pill" data-genre="Detective/Thriller"><div class="cat-icon">🔍</div><div class="cat-name" data-i18n="genre.mystery">Mystery</div></div>
-      <div class="cat-pill" data-genre="Fiction"><div class="cat-icon">📖</div><div class="cat-name" data-i18n="genre.literary">Literary</div></div>
-      <div class="cat-pill" data-genre="Non-fiction"><div class="cat-icon">🌿</div><div class="cat-name" data-i18n="genre.nonfiction">Non-fiction</div></div>
-      <div class="cat-pill" data-genre="Children's books"><div class="cat-icon">👶</div><div class="cat-name" data-i18n="genre.children">Children</div></div>
-      <div class="cat-pill" data-genre="History"><div class="cat-icon">🏛️</div><div class="cat-name" data-i18n="genre.history">History</div></div>
-    </div>
-  </section>
+    <section class="panel-section" id="panel-borrows" style="display:none">
+      <div class="section-label">Мій акаунт</div>
+      <div class="section-title">Мої книги</div>
+      <div class="borrows-tabs">
+        <button class="borrow-tab active" onclick="filterBorrows('active', this)">Активні</button>
+        <button class="borrow-tab" onclick="filterBorrows('returned', this)">Повернені</button>
+        <button class="borrow-tab" onclick="filterBorrows('all', this)">Усі</button>
+      </div>
+      <div id="borrows-list" class="borrows-list">
+        <div class="loading-spinner"></div>
+      </div>
+    </section>
 
-  <section class="banner-section">
-    <div class="banner-text">
-      <h2 data-i18n="banner.title">Start your reading journey today</h2>
-      <p data-i18n="banner.sub">Join thousands of readers who discover their next favourite book every week on Readly.</p>
-    </div>
-    <button class="btn-light" onclick="openModal('signup')" data-i18n="banner.cta">Create Free Account</button>
-  </section>
+    <section class="panel-section" id="panel-profile" style="display:none">
+      <div class="section-label">Профіль</div>
+      <div class="section-title">Мій профіль</div>
+      <div class="profile-card" id="profile-card" style="display:none">
+        <div class="profile-card-header">
+          <h3>Дані акаунта</h3>
+          <div class="profile-actions">
+            <button class="btn-small" onclick="openEditProfile()">Редагувати</button>
+            <button class="btn-danger-sm" onclick="confirmDeleteAccount()">Видалити акаунт</button>
+          </div>
+        </div>
+        <div id="profile-details" class="profile-details"></div>
+      </div>
+    </section>
+
+    <section class="panel-section" id="panel-admin" style="display:none">
+      <div class="section-label">Адміністрування</div>
+      <div class="section-title">Керування бібліотекою</div>
+      <div class="admin-actions">
+        <button class="btn-small" id="btn-add-user" style="display:none" onclick="openCreateUserModal()">Додати користувача</button>
+        <button class="btn-small" id="btn-add-book" style="display:none" onclick="openAddBookModal()">Додати книгу</button>
+        <button class="btn-small" id="btn-notify-sms" style="display:none" onclick="sendOverdueNotifications(true)">Надіслати SMS</button>
+        <button class="btn-secondary" id="btn-notify-email" style="display:none" onclick="sendOverdueNotifications(false)">Надіслати email</button>
+      </div>
+      <div class="admin-grid">
+        <div class="admin-col">
+          <div class="admin-col-header"><h3>Користувачі</h3></div>
+          <div id="admin-users-list" class="admin-list"><div class="loading-spinner"></div></div>
+        </div>
+        <div class="admin-col">
+          <div class="admin-col-header"><h3>Книги</h3></div>
+          <div id="admin-books-list" class="admin-list"><div class="loading-spinner"></div></div>
+        </div>
+        <div class="admin-col">
+          <div class="admin-col-header"><h3>Прострочені книги</h3></div>
+          <div id="admin-overdue-list" class="admin-list"><div class="loading-spinner"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <footer>
     <div class="footer-logo">Readly</div>
-    <ul class="footer-links">
-      <li><a href="#" data-i18n="nav.browse">Browse</a></li>
-      <li><a href="#" data-i18n="nav.about">About</a></li>
-      <li><a href="#" data-i18n="footer.contact">Contact</a></li>
-      <li><a href="#" data-i18n="footer.privacy">Privacy</a></li>
-    </ul>
-    <small data-i18n="footer.copy">© 2026 Readly. All rights reserved.</small>
+    <small>made by Mainstream code</small>
   </footer>
 
-  <!-- MODAL -->
   <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
-    <div class="modal" id="modal">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <h2 class="modal-title" id="modal-title">Welcome back</h2>
-      <p class="modal-sub" id="modal-sub">Sign in to your Readly account to continue.</p>
-      <div class="modal-tabs">
-        <div class="modal-tab active" id="mtab-login" onclick="switchTab('login')" data-i18n="modal.signIn">Sign In</div>
-        <div class="modal-tab" id="mtab-signup" onclick="switchTab('signup')" data-i18n="modal.createAccount">Create Account</div>
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="modal-title">Вхід</h2>
+      <p class="modal-sub" id="modal-sub">Увійдіть у свій акаунт Readly.</p>
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="modal-tab active" id="mtab-login" onclick="switchTab('login')">Увійти</button>
+        <button class="modal-tab" id="mtab-signup" onclick="switchTab('signup')">Створити акаунт</button>
       </div>
-
-      <div class="auth-feedback" id="auth-feedback" role="alert"></div>
-
-      <form id="auth-form" novalidate>
-        <div class="m-field signup-only" id="mf-name">
-          <label data-i18n="modal.fullName">Full Name</label>
-          <input type="text" name="full_name" data-i18n-placeholder="modal.fullNamePlaceholder" placeholder="Jane Austen" autocomplete="name" />
-        </div>
-        <div class="m-field">
-          <label data-i18n="modal.email">Email Address</label>
-          <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required />
-        </div>
-        <div class="m-field">
-          <label data-i18n="modal.password">Password</label>
-          <input type="password" name="password" data-i18n-placeholder="modal.passwordPlaceholder" placeholder="••••••••" autocomplete="current-password" required />
-        </div>
-        <div class="m-field signup-only" id="mf-confirm">
-          <label data-i18n="modal.confirmPassword">Confirm Password</label>
-          <input type="password" name="confirm_password" data-i18n-placeholder="modal.passwordPlaceholder" placeholder="••••••••" autocomplete="new-password" />
-        </div>
-        <div class="m-row" id="m-remember-row">
-          <label class="m-remember"><input type="checkbox" /> <span data-i18n="modal.remember">Remember me</span></label>
-          <a href="#" class="m-forgot" data-i18n="modal.forgot">Forgot password?</a>
-        </div>
-        <button type="submit" class="btn-modal-submit" id="modal-submit-btn" data-i18n="modal.signIn">Sign In</button>
-      </form>
-
-      <div class="m-divider" data-i18n="modal.orWith">or continue with</div>
-      <div class="m-socials">
-        <button class="m-social-btn" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Google
-        </button>
-        <button class="m-social-btn" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.164 6.839 9.49.5.09.682-.218.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.16 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>
-          GitHub
-        </button>
+      <div id="modal-error" class="modal-error" style="display:none"></div>
+      <div class="m-field signup-only" id="mf-name">
+        <label for="field-name">ПІБ</label>
+        <input type="text" id="field-name" autocomplete="name" />
+      </div>
+      <div class="m-field signup-only" id="mf-dob">
+        <label for="field-dob">Дата народження</label>
+        <input type="date" id="field-dob" />
+      </div>
+      <div class="m-field signup-only" id="mf-address">
+        <label for="field-address">Адреса проживання</label>
+        <input type="text" id="field-address" autocomplete="street-address" />
+      </div>
+      <div class="m-field signup-only" id="mf-phone">
+        <label for="field-phone">Номер телефону</label>
+        <input type="tel" id="field-phone" autocomplete="tel" />
+      </div>
+      <div class="m-field">
+        <label for="field-email">Email</label>
+        <input type="email" id="field-email" autocomplete="email" />
+      </div>
+      <div class="m-field">
+        <label for="field-password">Пароль</label>
+        <input type="password" id="field-password" autocomplete="current-password" />
+      </div>
+      <div class="m-field signup-only" id="mf-confirm">
+        <label for="field-confirm">Підтвердження пароля</label>
+        <input type="password" id="field-confirm" autocomplete="new-password" />
+      </div>
+      <div class="m-row" id="m-remember-row">
+        <label class="m-remember"><input type="checkbox" id="field-remember" /> Запам'ятати мене</label>
+      </div>
+      <button class="btn-modal-submit" id="modal-submit-btn" onclick="handleAuthSubmit()">Увійти</button>
+      <div id="modal-loading" class="modal-loading" style="display:none">
+        <div class="loading-spinner small"></div>
+        <span>Зачекайте...</span>
       </div>
     </div>
   </div>
 
-  <script src="books.js"></script>
+  <div class="modal-overlay" id="borrow-modal-overlay" onclick="closeBorrowModal()">
+    <div class="modal" id="borrow-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeBorrowModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="borrow-modal-title">Взяти книгу</h2>
+      <p class="modal-sub" id="borrow-modal-sub"></p>
+      <div id="borrow-modal-error" class="modal-error" style="display:none"></div>
+      <div class="m-field">
+        <label for="borrow-qty">Кількість примірників</label>
+        <input type="number" id="borrow-qty" min="1" max="10" value="1" />
+      </div>
+      <div class="m-field">
+        <label for="borrow-days">Термін користування (днів)</label>
+        <input type="number" id="borrow-days" min="1" max="365" value="14" />
+      </div>
+      <p class="borrow-due-preview" id="borrow-due-preview"></p>
+      <button class="btn-modal-submit" onclick="submitBorrow()">Підтвердити</button>
+    </div>
+  </div>
 
-  <script>
-    // ── i18n ────────────────────────────────────────────────────────────────
-    const translations = {
-      en: {
-        'nav.browse':        'Browse',
-        'nav.categories':    'Categories',
-        'nav.newArrivals':   'New Arrivals',
-        'nav.about':         'About',
-        'nav.signIn':        'Sign In',
-        'genre.all':         'All genres',
-        'genre.all2':        'All',
-        'genre.fantasy':     'Fantasy',
-        'genre.scifi':       'Sci-Fi',
-        'genre.romance':     'Romance',
-        'genre.mystery':     'Mystery',
-        'genre.detective':   'Detective/Thriller',
-        'genre.literary':    'Literary',
-        'genre.fiction':     'Fiction',
-        'genre.nonfiction':  'Non-fiction',
-        'genre.children':    "Children's",
-        'genre.history':     'History',
-        'search.placeholder':'Search for a book...',
-        'search.btn':        'Search',
-        'hero.eyebrow':      '✦ Your next great read awaits',
-        'hero.title':        'Discover <em>stories</em> that move you',
-        'hero.sub':          'Readly is your curated literary companion — explore thousands of titles across every genre, from timeless classics to today\'s bestsellers.',
-        'hero.browse':       'Browse Books →',
-        'hero.createAccount':'Create Account',
-        'stats.books':       'Books available',
-        'stats.genres':      'Genres & categories',
-        'stats.readers':     'Happy readers',
-        'stats.rating':      'Average rating',
-        'books.label':       'Featured picks',
-        'books.title':       "Books you'll love",
-        'cats.label':        'Explore by genre',
-        'cats.title':        'What are you in the mood for?',
-        'banner.title':      'Start your reading journey today',
-        'banner.sub':        'Join thousands of readers who discover their next favourite book every week on Readly.',
-        'banner.cta':        'Create Free Account',
-        'footer.contact':    'Contact',
-        'footer.privacy':    'Privacy',
-        'footer.copy':       '© 2026 Readly. All rights reserved.',
-        'modal.signIn':      'Sign In',
-        'modal.createAccount':'Create Account',
-        'modal.fullName':    'Full Name',
-        'modal.fullNamePlaceholder': 'Jane Austen',
-        'modal.email':       'Email Address',
-        'modal.password':    'Password',
-        'modal.passwordPlaceholder': '••••••••',
-        'modal.confirmPassword': 'Confirm Password',
-        'modal.remember':    'Remember me',
-        'modal.forgot':      'Forgot password?',
-        'modal.orWith':      'or continue with',
-        'modal.welcomeBack': 'Welcome back',
-        'modal.welcomeSub':  'Sign in to your Readly account to continue.',
-        'modal.createTitle': 'Create account',
-        'modal.createSub':   'Join Readly and start your reading journey.',
-        'modal.wait':        'Please wait…',
-        'modal.passwordMismatch': 'Passwords do not match. Please try again.',
-        'modal.networkError':'Unable to reach the server. Please check your connection and try again.',
-      },
-      uk: {
-        'nav.browse':        'Каталог',
-        'nav.categories':    'Категорії',
-        'nav.newArrivals':   'Новинки',
-        'nav.about':         'Про нас',
-        'nav.signIn':        'Увійти',
-        'genre.all':         'Усі жанри',
-        'genre.all2':        'Усі',
-        'genre.fantasy':     'Фентезі',
-        'genre.scifi':       'Наукова фантастика',
-        'genre.romance':     'Романтика',
-        'genre.mystery':     'Містика',
-        'genre.detective':   'Детектив/Трилер',
-        'genre.literary':    'Літературна проза',
-        'genre.fiction':     'Художня проза',
-        'genre.nonfiction':  'Нон-фікшн',
-        'genre.children':    'Дитячі книги',
-        'genre.history':     'Історія',
-        'search.placeholder':'Пошук книги...',
-        'search.btn':        'Знайти',
-        'hero.eyebrow':      '✦ Ваша наступна улюблена книга чекає',
-        'hero.title':        'Відкривайте <em>історії</em>, що захоплюють',
-        'hero.sub':          'Readly — ваш літературний путівник: тисячі книг у всіх жанрах, від класики до сучасних бестселерів.',
-        'hero.browse':       'Перейти до каталогу →',
-        'hero.createAccount':'Створити акаунт',
-        'stats.books':       'Книг у каталозі',
-        'stats.genres':      'Жанрів і категорій',
-        'stats.readers':     'Задоволених читачів',
-        'stats.rating':      'Середній рейтинг',
-        'books.label':       'Рекомендовано',
-        'books.title':       'Книги, які вам сподобаються',
-        'cats.label':        'Перегляд за жанром',
-        'cats.title':        'Який у вас настрій?',
-        'banner.title':      'Розпочніть свою читацьку подорож сьогодні',
-        'banner.sub':        'Приєднуйтесь до тисяч читачів, які щотижня знаходять нову улюблену книгу на Readly.',
-        'banner.cta':        'Зареєструватися безкоштовно',
-        'footer.contact':    'Контакти',
-        'footer.privacy':    'Конфіденційність',
-        'footer.copy':       '© 2026 Readly. Усі права захищено.',
-        'modal.signIn':      'Увійти',
-        'modal.createAccount':'Зареєструватися',
-        'modal.fullName':    'Повне ім\'я',
-        'modal.fullNamePlaceholder': 'Леся Українка',
-        'modal.email':       'Електронна пошта',
-        'modal.password':    'Пароль',
-        'modal.passwordPlaceholder': '••••••••',
-        'modal.confirmPassword': 'Підтвердіть пароль',
-        'modal.remember':    'Запам\'ятати мене',
-        'modal.forgot':      'Забули пароль?',
-        'modal.orWith':      'або продовжити через',
-        'modal.welcomeBack': 'З поверненням',
-        'modal.welcomeSub':  'Увійдіть у свій акаунт Readly.',
-        'modal.createTitle': 'Створення акаунта',
-        'modal.createSub':   'Приєднуйтесь до Readly і починайте читати.',
-        'modal.wait':        'Зачекайте…',
-        'modal.passwordMismatch': 'Паролі не збігаються. Спробуйте ще раз.',
-        'modal.networkError':'Не вдалося з\'єднатися з сервером. Перевірте підключення.',
-      }
-    };
+  <div class="modal-overlay" id="add-book-modal-overlay" onclick="closeAddBookModal()">
+    <div class="modal" id="add-book-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeAddBookModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title" id="add-book-modal-title">Додати книгу</h2>
+      <div id="add-book-error" class="modal-error" style="display:none"></div>
+      <div class="m-field">
+        <label for="book-title">Назва</label>
+        <input type="text" id="book-title" />
+      </div>
+      <div class="m-field">
+        <label for="book-author">Автор</label>
+        <input type="text" id="book-author" />
+      </div>
+      <div class="m-field">
+        <label for="book-genre">Жанр</label>
+        <select id="book-genre" class="m-select">
+          <option value="fantasy">Фентезі</option>
+          <option value="criminal">Кримінальна</option>
+          <option value="drama">Драма</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <label for="book-total">Загальна кількість</label>
+        <input type="number" id="book-total" min="1" value="1" />
+      </div>
+      <div class="m-field">
+        <label for="book-available">Доступна кількість</label>
+        <input type="number" id="book-available" min="0" value="1" />
+      </div>
+      <button class="btn-modal-submit" id="book-submit-btn" onclick="submitAddBook()">Додати книгу</button>
+    </div>
+  </div>
 
-    let currentLang = localStorage.getItem('readly-lang') || 'en';
+  <div class="modal-overlay" id="create-user-modal-overlay" onclick="closeCreateUserModal()">
+    <div class="modal" id="create-user-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeCreateUserModal()" aria-label="Закрити">x</button>
+      <h2 class="modal-title">Створити користувача</h2>
+      <p class="modal-sub">Створення акаунта з роллю доступне тільки адміністратору.</p>
+      <div id="create-user-error" class="modal-error" style="display:none"></div>
+      <div class="m-field">
+        <label for="cu-name">ПІБ</label>
+        <input type="text" id="cu-name" autocomplete="name" />
+      </div>
+      <div class="m-field">
+        <label for="cu-dob">Дата народження</label>
+        <input type="date" id="cu-dob" />
+      </div>
+      <div class="m-field">
+        <label for="cu-address">Адреса проживання</label>
+        <input type="text" id="cu-address" autocomplete="street-address" />
+      </div>
+      <div class="m-field">
+        <label for="cu-phone">Номер телефону</label>
+        <input type="tel" id="cu-phone" autocomplete="tel" />
+      </div>
+      <div class="m-field">
+        <label for="cu-email">Email</label>
+        <input type="email" id="cu-email" autocomplete="email" />
+      </div>
+      <div class="m-field">
+        <label for="cu-password">Тимчасовий пароль</label>
+        <input type="password" id="cu-password" autocomplete="new-password" />
+      </div>
+      <div class="m-field">
+        <label for="cu-role">Роль</label>
+        <select id="cu-role" class="m-select">
+          <option value="User">Користувач</option>
+          <option value="Advanced user">Розширений користувач</option>
+          <option value="Administrator">Адміністратор</option>
+        </select>
+      </div>
+      <button class="btn-modal-submit" onclick="submitCreateUser()">Створити акаунт</button>
+    </div>
+  </div>
 
-    function t(key) {
-      return (translations[currentLang] && translations[currentLang][key]) ||
-             (translations['en'][key]) || key;
-    }
-
-    function applyTranslations() {
-      // text nodes
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        el.textContent = t(el.dataset.i18n);
-      });
-      // innerHTML (for tags like <em>)
-      document.querySelectorAll('[data-i18n-html]').forEach(el => {
-        el.innerHTML = t(el.dataset.i18nHtml);
-      });
-      // placeholders
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        el.placeholder = t(el.dataset.i18nPlaceholder);
-      });
-      // <option> elements inside <select> (need value preserved)
-      document.querySelectorAll('select option[data-i18n]').forEach(el => {
-        el.textContent = t(el.dataset.i18n);
-      });
-      // page title
-      document.title = currentLang === 'uk' ? 'Readly — Ваш літературний світ' : 'Readly — Your Literary World';
-      // html lang attr
-      document.documentElement.lang = currentLang;
-      // active lang button
-      document.getElementById('lang-en').classList.toggle('lang-active', currentLang === 'en');
-      document.getElementById('lang-uk').classList.toggle('lang-active', currentLang === 'uk');
-    }
-
-    function setLanguage(lang) {
-      currentLang = lang;
-      localStorage.setItem('readly-lang', lang);
-      applyTranslations();
-      // Re-sync modal state text if modal is open
-      if (document.getElementById('modal-overlay').classList.contains('open')) {
-        const isRegister = currentMode === 'register';
-        document.getElementById('modal-title').textContent = isRegister ? t('modal.createTitle') : t('modal.welcomeBack');
-        document.getElementById('modal-sub').textContent   = isRegister ? t('modal.createSub')   : t('modal.welcomeSub');
-        document.getElementById('modal-submit-btn').textContent = isRegister ? t('modal.createAccount') : t('modal.signIn');
-      }
-    }
-
-    // run once on load
-    applyTranslations();
-
-    // ── Global State ────────────────────────────────────────────────────────
-    let currentMode = 'login';
-    const API_BASE  = 'http://127.0.0.1:8000';
-
-    // ── Feedback Banner ─────────────────────────────────────────────────────
-    function showFeedback(message, type) {
-      const el = document.getElementById('auth-feedback');
-      el.textContent = message;
-      el.className = `auth-feedback ${type}`;
-    }
-    function clearFeedback() {
-      const el = document.getElementById('auth-feedback');
-      el.textContent = '';
-      el.className = 'auth-feedback';
-    }
-
-    // ── Modal Lifecycle ─────────────────────────────────────────────────────
-    function openModal(mode) {
-      document.getElementById('modal-overlay').classList.add('open');
-      document.body.style.overflow = 'hidden';
-      switchTab(mode || 'login');
-    }
-    function closeModal() {
-      document.getElementById('modal-overlay').classList.remove('open');
-      document.body.style.overflow = '';
-      document.getElementById('auth-form').reset();
-      clearFeedback();
-    }
-    function handleOverlayClick(e) {
-      if (e.target === document.getElementById('modal-overlay')) closeModal();
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-    // ── Tab / Mode Switching ────────────────────────────────────────────────
-    function switchTab(mode) {
-      currentMode = (mode === 'signup') ? 'register' : mode;
-      const isRegister = currentMode === 'register';
-
-      document.getElementById('mtab-login').classList.toggle('active', !isRegister);
-      document.getElementById('mtab-signup').classList.toggle('active',  isRegister);
-
-      document.getElementById('modal-title').textContent =
-        isRegister ? t('modal.createTitle') : t('modal.welcomeBack');
-      document.getElementById('modal-sub').textContent =
-        isRegister ? t('modal.createSub') : t('modal.welcomeSub');
-      document.getElementById('modal-submit-btn').textContent =
-        isRegister ? t('modal.createAccount') : t('modal.signIn');
-      document.getElementById('m-remember-row').style.display =
-        isRegister ? 'none' : 'flex';
-
-      document.querySelectorAll('.signup-only').forEach(el => {
-        el.style.display = isRegister ? 'block' : 'none';
-      });
-      clearFeedback();
-    }
-
-    // ── Form Submission ─────────────────────────────────────────────────────
-    document.getElementById('auth-form').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      clearFeedback();
-
-      const form     = e.target;
-      const email    = form.email.value.trim();
-      const password = form.password.value;
-
-      if (currentMode === 'register') {
-        if (password !== form.confirm_password.value) {
-          form.confirm_password.focus();
-          showFeedback(t('modal.passwordMismatch'), 'error');
-          return;
-        }
-      }
-
-      const payload = { email, password };
-      if (currentMode === 'register') payload.full_name = form.full_name.value.trim();
-
-      const endpoint = currentMode === 'register'
-        ? `${API_BASE}/register`
-        : `${API_BASE}/login`;
-
-      const submitBtn = document.getElementById('modal-submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = t('modal.wait');
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-          const message = currentMode === 'register'
-            ? `${t('modal.createTitle')}! ${data.full_name ?? email}.`
-            : `${t('modal.welcomeBack')}! ${data.email ?? email}.`;
-          showFeedback(message, 'success');
-          setTimeout(closeModal, 1800);
-        } else {
-          const errorMessage = data.detail ?? data.message ?? 'Something went wrong.';
-          showFeedback(`Error: ${errorMessage}`, 'error');
-        }
-      } catch (networkError) {
-        console.error('Auth request failed:', networkError);
-        showFeedback(t('modal.networkError'), 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === 'register' ? t('modal.createAccount') : t('modal.signIn');
-      }
-    });
-  </script>
-
-  <script>
-    // ── Genre filter pills ───────────────────────────────────────────────────
-    function filterByGenre(genre) {
-      document.querySelectorAll('#genre-filter .cat-pill').forEach(pill => {
-        pill.classList.toggle('active', genre === 'All' ? pill.dataset.genre === 'All' : pill.dataset.genre === genre);
-      });
-      document.querySelectorAll('#books-grid .book-card, #books-grid [data-genre]').forEach(card => {
-        card.style.display = (genre === 'All' || card.dataset.genre === genre) ? '' : 'none';
-      });
-    }
-
-    function initGenreFilter() {
-      document.querySelectorAll('#genre-filter .cat-pill').forEach(pill => {
-        pill.style.cursor = 'pointer';
-        pill.addEventListener('click', () => filterByGenre(pill.dataset.genre));
-      });
-      document.querySelectorAll('.cats-grid .cat-pill').forEach(pill => {
-        pill.style.cursor = 'pointer';
-        pill.addEventListener('click', () => {
-          document.getElementById('books').scrollIntoView({ behavior: 'smooth' });
-          setTimeout(() => filterByGenre(pill.dataset.genre), 400);
-        });
-      });
-    }
-
-    const DEMO_BOOKS = [
-      { title: 'The Name of the Wind', author: 'Patrick Rothfuss', genre: 'Fantasy',            cover: '#7c6fa0' },
-      { title: 'Dune',                 author: 'Frank Herbert',    genre: 'Sci-Fi',              cover: '#c2924a' },
-      { title: 'Pride and Prejudice',  author: 'Jane Austen',      genre: 'Romance',             cover: '#c26b8a' },
-      { title: 'The Girl with the Dragon Tattoo', author: 'Stieg Larsson', genre: 'Detective/Thriller', cover: '#4a7a8a' },
-      { title: 'To Kill a Mockingbird', author: 'Harper Lee',      genre: 'Fiction',             cover: '#7a9a6a' },
-      { title: 'Sapiens',              author: 'Yuval Noah Harari',genre: 'Non-fiction',         cover: '#8a7a5a' },
-      { title: 'The Hobbit',           author: 'J.R.R. Tolkien',   genre: 'Fantasy',             cover: '#6a8a5a' },
-      { title: 'Foundation',           author: 'Isaac Asimov',     genre: 'Sci-Fi',              cover: '#5a6a9a' },
-      { title: 'Outlander',            author: 'Diana Gabaldon',   genre: 'Romance',             cover: '#9a6a7a' },
-      { title: 'Gone Girl',            author: 'Gillian Flynn',    genre: 'Detective/Thriller',  cover: '#6a7a8a' },
-      { title: "Harry Potter", author: 'J.K. Rowling',            genre: "Children's books",   cover: '#8a6a4a' },
-      { title: 'SPQR',                 author: 'Mary Beard',       genre: 'History',             cover: '#9a8a6a' },
-    ];
-
-    function renderDemoBooks() {
-      const grid = document.getElementById('books-grid');
-      if (!grid || grid.children.length > 0) return;
-      grid.innerHTML = DEMO_BOOKS.map(b => `
-        <div class="book-card" data-genre="${b.genre}" style="cursor:pointer;">
-          <div style="height:180px;border-radius:8px;background:${b.cover};display:flex;align-items:flex-end;padding:10px;">
-            <span style="color:#fff;font-size:11px;opacity:0.85;">${b.genre}</span>
-          </div>
-          <div style="padding:10px 2px;">
-            <div style="font-weight:600;font-size:14px;margin-bottom:3px;">${b.title}</div>
-            <div style="font-size:12px;opacity:0.6;">${b.author}</div>
-          </div>
-        </div>`).join('');
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { renderDemoBooks(); initGenreFilter(); });
-    } else {
-      renderDemoBooks(); initGenreFilter();
-    }
-  </script>
+  <div class="modal-overlay" id="edit-profile-overlay" onclick="closeEditProfile()">
+    <div class="modal" id="edit-profile-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeEditProfile()" aria-label="Закрити">x</button>
+      <h2 class="modal-title">Редагувати профіль</h2>
+      <div id="edit-profile-error" class="modal-error" style="display:none"></div>
+      <div class="m-field">
+        <label for="edit-name">ПІБ</label>
+        <input type="text" id="edit-name" />
+      </div>
+      <div class="m-field">
+        <label for="edit-email">Email</label>
+        <input type="email" id="edit-email" />
+      </div>
+      <div class="m-field">
+        <label for="edit-phone">Телефон</label>
+        <input type="tel" id="edit-phone" />
+      </div>
+      <div class="m-field">
+        <label for="edit-address">Адреса</label>
+        <input type="text" id="edit-address" />
+      </div>
+      <div class="m-field">
+        <label for="edit-dob">Дата народження</label>
+        <input type="date" id="edit-dob" />
+      </div>
+      <button class="btn-modal-submit" onclick="submitEditProfile()">Зберегти зміни</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
