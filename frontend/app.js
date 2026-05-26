@@ -4,6 +4,38 @@ const genreSelect = document.getElementById('genreSelect');
 const searchBtn = document.getElementById('searchBtn');
 const booksGrid = document.getElementById('booksGrid');
 
+const translations = {
+    en: {
+        logo: "Readly",
+        nav_browse: "Browse",
+        hero_title: "Your Literary World"
+    },
+    uk: {
+        logo: "Readly (укр)",
+        nav_browse: "Каталог",
+        hero_title: "Ваш літературний світ"
+    }
+};
+
+function applyLanguage(lang) {
+    localStorage.setItem('lang', lang);
+    
+    // Знаходимо всі елементи, що мають атрибут data-i18n
+    const elements = document.querySelectorAll('[data-i18n]');
+    
+    elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+            el.textContent = translations[lang][key];
+        }
+    });
+}
+
+// Застосовуємо при завантаженні сторінки
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('lang') || 'en';
+    applyLanguage(savedLang);
+});
 
 async function fetchBooks() {
   
