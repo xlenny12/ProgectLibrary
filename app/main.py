@@ -40,7 +40,7 @@ def create_scheduler():
                         svc.send_overdue_sms(user, borrow)
                         count += 1
                     except Exception as e:
-                        logger.error(f"Failed to send SMS to {user.email}: {e}")
+                        logger.error(f"Failed to send SMS for user_id={user.id}: {e}")
             logger.info(f"Overdue notification job completed: {count} notifications sent")
         except Exception as e:
             logger.error(f"Overdue notification job failed: {e}", exc_info=True)
@@ -62,6 +62,7 @@ async def lifespan(app: FastAPI):
     - Gracefully shutdown the scheduler
     """
     settings = get_settings()
+    settings.validate_security()
     settings.ensure_data_dir()
     logger.info(f"Data directory ready: {settings.data_dir}")
     
@@ -84,7 +85,13 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ],
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):(3000|5173|8080)$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

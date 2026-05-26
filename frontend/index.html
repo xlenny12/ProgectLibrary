@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Readly — Your Literary World</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readly - Library System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
     /* ── Nav layout fix ─────────────────────────────────────────── */
@@ -56,9 +58,10 @@
   </style>
 </head>
 <body>
+  <div id="toast-container" aria-live="polite"></div>
 
   <nav>
-    <a class="nav-logo" href="#">Readly</a>
+    <a class="nav-logo" href="#" onclick="showPanel('home'); return false;">Readly</a>
     <ul class="nav-links">
       <li><a href="#books" data-i18n="nav.browse">Browse</a></li>
       <li><a href="#categories" data-i18n="nav.categories">Categories</a></li>
@@ -102,14 +105,13 @@
         <a href="#books" class="btn-primary" data-i18n="hero.browse">Browse Books →</a>
         <button class="btn-secondary" onclick="openModal('signup')" data-i18n="hero.createAccount">Create Account</button>
       </div>
-    </div>
-    <div class="hero-visual">
-      <div class="hero-book hb1"></div>
-      <div class="hero-book hb2"></div>
-      <div class="hero-book hb3"></div>
-      <div class="hero-book hb4"></div>
-    </div>
-  </section>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-book hb1"></div>
+        <div class="hero-book hb2"></div>
+        <div class="hero-book hb3"></div>
+        <div class="hero-book hb4"></div>
+      </div>
+    </section>
 
   <div class="stats-section">
     <div><div class="stat-num">24,000+</div><div class="stat-label" data-i18n="stats.books">Books available</div></div>
@@ -171,10 +173,9 @@
     <small data-i18n="footer.copy">© 2026 Readly. All rights reserved.</small>
   </footer>
 
-  <!-- MODAL -->
   <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
-    <div class="modal" id="modal">
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">x</button>
       <h2 class="modal-title" id="modal-title">Welcome back</h2>
       <p class="modal-sub" id="modal-sub">Sign in to your Readly account to continue.</p>
       <div class="modal-tabs">

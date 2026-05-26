@@ -39,6 +39,7 @@ class BorrowService:
                 id=str(uuid.uuid4()),
                 user_id=user_id,
                 book_id=data.book_id,
+                book_type=book.book_type,
                 date_taken=date.today().isoformat(),
                 days=data.days,
                 quantity=data.quantity,
@@ -50,28 +51,33 @@ class BorrowService:
             self.book_repo.save(updated_book)
             self.borrow_repo.save(record)
             logger.info(f"Book borrowed: user={user_id}, book={data.book_id}, qty={data.quantity}, borrow_id={record.id}")
-            audit.log(user_id, "BOOK_BORROWED", {"borrow_id": record.id, "book_id": data.book_id})
+            audit.log(user_id, "BOOK_UPDATED", {"book": updated_book.model_dump(mode="json")})
+            audit.log(user_id, "BOOK_BORROWED", {"borrow": record.model_dump(mode="json")})
             return BorrowPublic(**record.model_dump())
 
     def return_book(self, borrow_id: str, user_id: str) -> BorrowPublic:
-        record = self.borrow_repo.find_by_id(borrow_id)
-        if not record:
-            logger.warning(f"Return failed: borrow record not found. user={user_id}, borrow_id={borrow_id}")
-            raise ValueError("Borrow record not found.")
-        if record.user_id != user_id:
-            logger.warning(f"Return unauthorized: user mismatch. user={user_id}, borrow.user={record.user_id}")
-            raise ValueError("Not your borrow record.")
-        if record.returned:
-            logger.warning(f"Return failed: already returned. user={user_id}, borrow_id={borrow_id}")
-            raise ValueError("Already returned.")
-        book = self.book_repo.find_by_id(record.book_id)
-        if book:
-            self.book_repo.save(book.model_copy(update={"available_qty": book.available_qty + record.quantity}))
-        updated = record.model_copy(update={"returned": True})
-        self.borrow_repo.save(updated)
-        logger.info(f"Book returned: user={user_id}, borrow_id={borrow_id}, book={record.book_id}, qty={record.quantity}")
-        audit.log(user_id, "BOOK_RETURNED", {"borrow_id": borrow_id})
-        return BorrowPublic(**updated.model_dump())
+        with _borrow_lock:
+            record = self.borrow_repo.find_by_id(borrow_id)
+            if not record:
+                logger.warning(f"Return failed: borrow record not found. user={user_id}, borrow_id={borrow_id}")
+                raise ValueError("Borrow record not found.")
+            if record.user_id != user_id:
+                logger.warning(f"Return unauthorized: user mismatch. user={user_id}, borrow.user={record.user_id}")
+                raise ValueError("Not your borrow record.")
+            if record.returned:
+                logger.warning(f"Return failed: already returned. user={user_id}, borrow_id={borrow_id}")
+                raise ValueError("Already returned.")
+            book = self.book_repo.find_by_id(record.book_id)
+            if book:
+                restored_qty = min(book.total_qty, book.available_qty + record.quantity)
+                updated_book = book.model_copy(update={"available_qty": restored_qty})
+                self.book_repo.save(updated_book)
+                audit.log(user_id, "BOOK_UPDATED", {"book": updated_book.model_dump(mode="json")})
+            updated = record.model_copy(update={"returned": True})
+            self.borrow_repo.save(updated)
+            logger.info(f"Book returned: user={user_id}, borrow_id={borrow_id}, book={record.book_id}, qty={record.quantity}")
+            audit.log(user_id, "BOOK_RETURNED", {"borrow": updated.model_dump(mode="json")})
+            return BorrowPublic(**updated.model_dump())
 
     def my_borrows(self, user_id: str) -> list[BorrowPublic]:
         return [BorrowPublic(**b.model_dump()) for b in self.borrow_repo.find_by_user(user_id)]
@@ -82,8 +88,16 @@ class BorrowService:
 
     def delete_all_for_user(self, user_id: str, actor_id: str) -> int:
         """GDPR: remove all borrow records for a user."""
-        records = self.borrow_repo.find_by_user(user_id)
-        for r in records:
-            self.borrow_repo.delete(r.id)
-        audit.log(actor_id, "BORROWS_DELETED_GDPR", {"user_id": user_id, "count": len(records)})
-        return len(records)
+        with _borrow_lock:
+            records = self.borrow_repo.find_by_user(user_id)
+            for record in records:
+                if not record.returned:
+                    book = self.book_repo.find_by_id(record.book_id)
+                    if book:
+                        restored_qty = min(book.total_qty, book.available_qty + record.quantity)
+                        updated_book = book.model_copy(update={"available_qty": restored_qty})
+                        self.book_repo.save(updated_book)
+                        audit.log("system", "BOOK_UPDATED", {"book": updated_book.model_dump(mode="json"), "reason": "user_data_delete"})
+                self.borrow_repo.delete(record.id)
+            audit.log(actor_id, "BORROWS_DELETED_GDPR", {"user_id": user_id, "count": len(records)})
+            return len(records)
