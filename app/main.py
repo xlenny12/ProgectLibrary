@@ -103,11 +103,12 @@ app.include_router(books.router)
 app.include_router(borrows.router)
 app.include_router(admin.router)
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 # Serve frontend files in production and local single-server mode
 frontend_path = Path("frontend")
 if frontend_path.exists():
     app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
