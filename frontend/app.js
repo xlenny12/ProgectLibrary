@@ -8,6 +8,14 @@ let currentUser = null;
 let currentToken = null;
 let refreshToken = null;
 
+function isAdmin() {
+  return currentUser?.role === "Administrator";
+}
+
+function canUseStaffPanel() {
+  return currentUser?.role === "Administrator" || currentUser?.role === "Advanced user";
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -19,6 +27,15 @@ function escapeHtml(value) {
 
 function escapeJsAttr(value) {
   return escapeHtml(String(value ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\r?\n/g, " "));
+}
+
+function formatApiError(data, fallback) {
+  if (!data) return fallback;
+  if (typeof data.detail === "string") return data.detail;
+  if (Array.isArray(data.detail)) {
+    return data.detail.map((item) => item.msg || JSON.stringify(item)).join("; ");
+  }
+  return fallback;
 }
 
 // ========================================
@@ -41,7 +58,7 @@ function loadUserSession() {
       currentToken = parsed.access_token;
       refreshToken = parsed.refresh_token;
       updateAuthUI();
-      if (currentUser.role === "Administrator") {
+      if (canUseStaffPanel()) {
         loadAdminPanel();
       }
     } catch (e) {
@@ -140,7 +157,7 @@ async function registerUser() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.detail || "Registration failed");
+      throw new Error(formatApiError(data, "Registration failed"));
     }
 
     const user = await res.json();
@@ -174,7 +191,7 @@ async function loginUser() {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.detail || "Login failed");
+      throw new Error(formatApiError(data, "Login failed"));
     }
 
     const data = await res.json();
@@ -190,7 +207,7 @@ async function loginUser() {
     showToast(`Welcome, ${user.full_name}!`);
     loadBooks();
 
-    if (user.role === "Administrator") {
+    if (canUseStaffPanel()) {
       loadAdminPanel();
     }
   } catch (error) {
@@ -503,10 +520,12 @@ async function deleteAccount() {
 // ========================================
 
 async function loadAdminPanel() {
-  if (!currentUser || currentUser.role !== "Administrator") return;
+  if (!canUseStaffPanel()) return;
 
-  document.getElementById("btn-add-user").style.display = "block";
-  document.getElementById("btn-add-book").style.display = "block";
+  document.getElementById("btn-add-user").style.display = isAdmin() ? "block" : "none";
+  document.getElementById("btn-add-book").style.display = isAdmin() ? "block" : "none";
+  document.getElementById("btn-notify-sms").style.display = "inline-flex";
+  document.getElementById("btn-notify-email").style.display = "inline-flex";
 
   loadAdminUsers();
   loadAdminBooks();
@@ -526,13 +545,16 @@ async function loadAdminUsers() {
     users.forEach((user) => {
       const item = document.createElement("div");
       item.className = "admin-list-item";
+      const deleteButton = isAdmin()
+        ? `<button class="btn-danger-sm" onclick="adminDeleteUser('${escapeJsAttr(user.id)}')">Delete</button>`
+        : "";
       item.innerHTML = `
         <div>
           <strong>User ID: ${escapeHtml(user.id)}</strong><br/>
           <small>Personal data hidden by policy</small><br/>
           <span class="role-badge">${escapeHtml(user.role)}</span>
         </div>
-        <button class="btn-small" style="background: #dc3545;" onclick="adminDeleteUser('${escapeJsAttr(user.id)}')">Delete</button>
+        ${deleteButton}
       `;
       list.appendChild(item);
     });
@@ -554,12 +576,15 @@ async function loadAdminBooks() {
     books.forEach((book) => {
       const item = document.createElement("div");
       item.className = "admin-list-item";
+      const deleteButton = isAdmin()
+        ? `<button class="btn-danger-sm" onclick="adminDeleteBook('${escapeJsAttr(book.id)}')">Delete</button>`
+        : "";
       item.innerHTML = `
         <div>
           <strong>${escapeHtml(book.title)}</strong> by ${escapeHtml(book.author)}<br/>
           <small>${escapeHtml(book.book_type)} | ${escapeHtml(book.available_qty)}/${escapeHtml(book.total_qty)}</small>
         </div>
-        <button class="btn-small" style="background: #dc3545;" onclick="adminDeleteBook('${escapeJsAttr(book.id)}')">Delete</button>
+        ${deleteButton}
       `;
       list.appendChild(item);
     });
@@ -600,11 +625,87 @@ async function loadAdminOverdue() {
 }
 
 function openAddBookModal() {
+  document.getElementById("add-book-error").style.display = "none";
   document.getElementById("add-book-modal-overlay").style.display = "flex";
 }
 
 function closeAddBookModal() {
   document.getElementById("add-book-modal-overlay").style.display = "none";
+}
+
+function showAddBookError(message) {
+  const errorDiv = document.getElementById("add-book-error");
+  errorDiv.textContent = message;
+  errorDiv.style.display = "block";
+}
+
+function openCreateUserModal() {
+  if (!isAdmin()) {
+    showToast("Only administrators can create users");
+    return;
+  }
+  document.getElementById("create-user-error").style.display = "none";
+  document.getElementById("create-user-modal-overlay").style.display = "flex";
+}
+
+function closeCreateUserModal() {
+  document.getElementById("create-user-modal-overlay").style.display = "none";
+}
+
+function showCreateUserError(message) {
+  const errorDiv = document.getElementById("create-user-error");
+  errorDiv.textContent = message;
+  errorDiv.style.display = "block";
+}
+
+function clearCreateUserForm() {
+  ["cu-name", "cu-dob", "cu-address", "cu-phone", "cu-email", "cu-password"].forEach((id) => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("cu-role").value = "User";
+  document.getElementById("create-user-error").style.display = "none";
+}
+
+async function submitCreateUser() {
+  if (!isAdmin()) return;
+
+  const payload = {
+    full_name: document.getElementById("cu-name").value.trim(),
+    date_of_birth: document.getElementById("cu-dob").value,
+    address: document.getElementById("cu-address").value.trim(),
+    phone: document.getElementById("cu-phone").value.trim(),
+    email: document.getElementById("cu-email").value.trim(),
+    password: document.getElementById("cu-password").value,
+    role: document.getElementById("cu-role").value,
+  };
+
+  if (!payload.full_name || !payload.date_of_birth || !payload.address || !payload.phone || !payload.email || !payload.password) {
+    showCreateUserError("All fields are required");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${currentToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(formatApiError(data, "Failed to create user"));
+    }
+
+    showToast("User created");
+    clearCreateUserForm();
+    closeCreateUserModal();
+    loadAdminUsers();
+  } catch (error) {
+    showCreateUserError(error.message);
+  }
 }
 
 async function submitAddBook() {
@@ -614,8 +715,13 @@ async function submitAddBook() {
   const total = parseInt(document.getElementById("book-total").value);
   const available = parseInt(document.getElementById("book-available").value);
 
-  if (!title || !author || total < 1) {
-    alert("Please fill in all required fields");
+  if (!title || !author || Number.isNaN(total) || Number.isNaN(available) || total < 1 || available < 0) {
+    showAddBookError("Please fill in all required fields with valid quantities");
+    return;
+  }
+
+  if (available > total) {
+    showAddBookError("Available copies cannot exceed total copies");
     return;
   }
 
@@ -635,7 +741,10 @@ async function submitAddBook() {
       }),
     });
 
-    if (!res.ok) throw new Error("Failed to add book");
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(formatApiError(data, "Failed to add book"));
+    }
 
     showToast("Book added successfully!");
     closeAddBookModal();
@@ -647,7 +756,33 @@ async function submitAddBook() {
     document.getElementById("book-total").value = 1;
     document.getElementById("book-available").value = 1;
   } catch (error) {
-    alert("Error: " + error.message);
+    showAddBookError(error.message);
+  }
+}
+
+async function sendOverdueNotifications(useSms) {
+  if (!canUseStaffPanel()) {
+    showToast("Only staff roles can send reminders");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/notify/overdue?use_sms=${useSms}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${currentToken}` },
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(formatApiError(data, "Failed to send reminders"));
+    }
+
+    const data = await res.json();
+    showToast(`${data.notified} overdue reminder record(s) processed`);
+    loadAdminOverdue();
+    updateStats();
+  } catch (error) {
+    showToast(error.message);
   }
 }
 
@@ -707,8 +842,11 @@ function updateAuthUI() {
     roleBadge.style.display = "inline-block";
     myBorrowsNav.style.display = "block";
 
-    if (currentUser.role === "Administrator") {
+    if (canUseStaffPanel()) {
+      adminNav.querySelector("a").textContent = isAdmin() ? "Admin" : "Staff";
       adminNav.style.display = "block";
+    } else {
+      adminNav.style.display = "none";
     }
 
     loadUserBorrows();
@@ -801,8 +939,12 @@ function showPanel(panelName) {
     if (el) el.style.display = p === panelName ? "block" : "none";
   });
 
+  document.querySelectorAll(".home-section").forEach((el) => {
+    el.style.display = panelName === "home" ? "" : "none";
+  });
+
   if (panelName === "home") {
-    document.getElementById("hero-section").style.display = "block";
+    document.getElementById("hero-section").style.display = "grid";
   } else {
     document.getElementById("hero-section").style.display = "none";
   }
@@ -811,7 +953,7 @@ function showPanel(panelName) {
     loadUserBorrows();
   }
 
-  if (panelName === "admin" && currentUser && currentUser.role === "Administrator") {
+  if (panelName === "admin" && canUseStaffPanel()) {
     loadAdminPanel();
   }
 }
