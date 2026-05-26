@@ -35,6 +35,17 @@ class Settings(BaseSettings):
     def ensure_data_dir(self) -> None:
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
+    def validate_security(self) -> None:
+        """Fail fast for production deployments with unsafe placeholder secrets."""
+        if self.app_env.lower() != "production":
+            return
+        if self.secret_key == "changeme" or len(self.secret_key) < 32:
+            raise RuntimeError("SECRET_KEY must be a unique 32+ character secret in production.")
+        if not self.fernet_key:
+            raise RuntimeError("FERNET_KEY must be configured in production.")
+        if not self.audit_hmac_key or len(self.audit_hmac_key) < 32:
+            raise RuntimeError("AUDIT_HMAC_KEY must be a unique 32+ character secret in production.")
+
 
 @lru_cache
 def get_settings() -> Settings:

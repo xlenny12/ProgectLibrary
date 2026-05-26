@@ -27,3 +27,42 @@ def test_tampered_log_detected(tmp_path):
     ok, tampered = audit.verify_integrity()
     assert not ok
     assert len(tampered) == 1
+
+
+def test_replay_database_reconstructs_current_state():
+    user = {
+        "id": "u1",
+        "full_name": "User One",
+        "email": "one@example.com",
+        "phone": "+380991234567",
+        "date_of_birth": "1990-01-01",
+        "address": "Lviv",
+        "role": "User",
+        "password_hash": "$2b$hash",
+    }
+    book = {
+        "id": "b1",
+        "title": "Dune",
+        "author": "Frank Herbert",
+        "book_type": "fantasy",
+        "total_qty": 2,
+        "available_qty": 1,
+    }
+    borrow = {
+        "id": "br1",
+        "user_id": "u1",
+        "book_id": "b1",
+        "book_type": "fantasy",
+        "date_taken": "2026-01-01",
+        "days": 14,
+        "quantity": 1,
+        "returned": False,
+    }
+    audit.log("system", "USER_CREATED", {"user": user})
+    audit.log("system", "BOOK_CREATED", {"book": book})
+    audit.log("u1", "BOOK_BORROWED", {"borrow": borrow})
+
+    state = audit.replay_database()
+    assert state["users"] == [user]
+    assert state["books"] == [book]
+    assert state["borrows"] == [borrow]

@@ -16,7 +16,7 @@ PyJWT==2.12.1
 python-multipart==0.0.22
 
 # Background Tasks & Scheduling
-apscheduler==3.11.12
+apscheduler==3.11.2
 
 # Notifications
 twilio==9.10.3
@@ -26,6 +26,7 @@ pytest==9.0.2
 pytest-asyncio==1.3.0
 pytest-cov==7.0.0
 coverage==7.13.4
+httpx==0.28.1
 
 # Environment Configuration
 python-dotenv==1.2.2

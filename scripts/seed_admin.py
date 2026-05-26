@@ -60,13 +60,14 @@ def create_admin():
                 password=password,
                 role=Role.ADMIN,
             ),
-            actor_id="system"
+            actor_id="system",
+            allow_role_selection=True,
         )
         print("\n" + "="*70)
         print("✅ Admin user created successfully!")
         print("="*70)
         print(f"User ID: {user.id}")
-        print(f"Email:   {user.full_name}")
+        print(f"Email:   {user.email}")
         print(f"\nYou can now log in at /api/auth/login")
         print("="*70 + "\n")
 
