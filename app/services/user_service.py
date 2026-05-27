@@ -43,11 +43,12 @@ class UserService:
         audit.log(event_actor, "USER_CREATED", {"user": user.model_dump(mode="json")})
         return UserSelf(**user.model_dump(exclude={"password_hash"}))
 
-    def authenticate(self, email: str, password: str) -> UserInDB:
+    def authenticate(self, email: str, password: str, log_success: bool = True) -> UserInDB:
         user = self.repo.find_by_email(email)
         if not user or not verify_password(password, user.password_hash):
             raise ValueError("Invalid email or password.")
-        audit.log(user.id, "USER_LOGIN", {})
+        if log_success:
+            audit.log(user.id, "USER_LOGIN", {})
         return user
 
     def get_self(self, user_id: str) -> UserSelf:
