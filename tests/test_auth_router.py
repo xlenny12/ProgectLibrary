@@ -1,9 +1,9 @@
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
-from app.routers import auth
 from app.main import app
 from app.models.user import Role, UserCreate
+from app.routers import auth
 from app.services.user_service import UserService
 
 client = TestClient(app)
@@ -56,8 +56,7 @@ def test_register_and_login():
     assert "access_token" in verify.json()
 
 
-def test_verify_2fa_rejects_bad_code(monkeypatch):
-    monkeypatch.setattr(auth.two_factor_service, "send_code_to_email", _fake_send_code)
+def test_verify_2fa_rejects_bad_code():
     client.post("/api/auth/register", json=REG_PAYLOAD)
     login = client.post("/api/auth/login", data={"username": REG_PAYLOAD["email"], "password": REG_PAYLOAD["password"]})
     assert login.status_code == 200
