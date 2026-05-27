@@ -306,7 +306,7 @@ async function signInWithCredentials(email, password) {
 
   const data = await res.json();
   if (data.requires_2fa) {
-    return { requiresTwoFactor: true, email: data.email || email };
+    return { requiresTwoFactor: true, email: data.email || email, devCode: data.dev_code };
   }
 
   return finishLogin(data);
@@ -323,12 +323,14 @@ async function finishLogin(tokens) {
   return user;
 }
 
-function enterTwoFactorStep(email) {
+function enterTwoFactorStep(email, devCode) {
   pendingTwoFactorEmail = email;
   document.getElementById("mtab-login").classList.add("active");
   document.getElementById("mtab-signup").classList.remove("active");
   document.getElementById("modal-title").textContent = "Двофакторна перевірка";
-  document.getElementById("modal-sub").textContent = `Введіть 6-значний код, надісланий на ${email}.`;
+  document.getElementById("modal-sub").textContent = devCode
+    ? `Демо-код для входу: ${devCode}`
+    : `Введіть 6-значний код, надісланий на ${email}.`;
   document.getElementById("modal-submit-btn").textContent = "Підтвердити код";
   document.getElementById("m-remember-row").style.display = "none";
   document.querySelectorAll(".signup-only").forEach((el) => (el.style.display = "none"));
@@ -396,7 +398,7 @@ async function loginUser() {
   try {
     const result = await signInWithCredentials(email, password);
     if (result.requiresTwoFactor) {
-      enterTwoFactorStep(result.email);
+      enterTwoFactorStep(result.email, result.devCode);
       return;
     }
 

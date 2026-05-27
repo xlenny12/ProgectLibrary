@@ -19,10 +19,10 @@ class TwoFactorService:
     def __init__(self) -> None:
         self._pending: dict[str, dict[str, object]] = {}
 
-    def send_code_to_email(self, email: str, user_id: str, role: str) -> None:
+    def send_code_to_email(self, email: str, user_id: str, role: str) -> str | None:
         code = self._generate_code()
         self._store_code(email, code, user_id, role)
-        self._send_email(email, code, user_id)
+        return self._send_email(email, code, user_id)
 
     def verify_code(self, email: str, code: str) -> dict[str, str] | None:
         key = self._normalize_email(email)
@@ -59,7 +59,7 @@ class TwoFactorService:
             "attempts": 0,
         }
 
-    def _send_email(self, email: str, code: str, user_id: str) -> None:
+    def _send_email(self, email: str, code: str, user_id: str) -> str | None:
         settings = get_settings()
         if not settings.smtp_user or not settings.smtp_password:
             if settings.app_env.lower() == "production":
@@ -67,7 +67,7 @@ class TwoFactorService:
                 raise TwoFactorEmailError("Email sending is not configured.")
             logger.warning("Development 2FA code for %s: %s", email, code)
             audit.log(user_id, "TWO_FACTOR_CODE_LOGGED_DEV", {})
-            return
+            return code
 
         message = EmailMessage()
         message["Subject"] = "Readly verification code"
@@ -86,6 +86,7 @@ class TwoFactorService:
                     server.login(settings.smtp_user, settings.smtp_password)
                     server.send_message(message)
             audit.log(user_id, "TWO_FACTOR_CODE_SENT", {})
+            return None
         except (OSError, smtplib.SMTPException) as exc:
             self._pending.pop(self._normalize_email(email), None)
             audit.log(user_id, "TWO_FACTOR_CODE_FAILED", {"error_type": type(exc).__name__})
