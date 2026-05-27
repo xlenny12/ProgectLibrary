@@ -155,13 +155,17 @@
         <label for="field-phone">Номер телефону</label>
         <input type="tel" id="field-phone" autocomplete="tel" />
       </div>
-      <div class="m-field">
+      <div class="m-field auth-credential-field">
         <label for="field-email">Email</label>
         <input type="email" id="field-email" autocomplete="email" />
       </div>
-      <div class="m-field">
+      <div class="m-field auth-credential-field">
         <label for="field-password">Пароль</label>
         <input type="password" id="field-password" autocomplete="current-password" />
+      </div>
+      <div class="m-field twofa-only" id="mf-2fa">
+        <label for="field-2fa-code">Код підтвердження</label>
+        <input type="text" id="field-2fa-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code" />
       </div>
       <div class="m-field signup-only" id="mf-confirm">
         <label for="field-confirm">Підтвердження пароля</label>
