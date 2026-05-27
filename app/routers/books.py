@@ -81,11 +81,3 @@ def delete_book(book_id: str, current_user: UserInDB = Depends(require_role(Role
     except ValueError as e:
         raise HTTPException(404, str(e))
     
-# У вашому app/models/book.py
-class BookCreate(BaseModel):
-    title: str
-    author: str
-    book_type: BookType
-    total_qty: int
-    available_qty: int
-    cover_image_url: str | None = None  # Додайте це поле
