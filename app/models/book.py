@@ -1,5 +1,5 @@
 from enum import Enum
-
+from pydantic import HttpUrl
 from pydantic import BaseModel, field_validator, model_validator
 
 
@@ -27,6 +27,7 @@ class BookBase(BaseModel):
     book_type: BookType
     total_qty: int
     available_qty: int
+    cover_image_url: str | None = None
 
     @field_validator("title")
     @classmethod
@@ -64,6 +65,7 @@ class BookUpdate(BaseModel):
     book_type: BookType | None = None
     total_qty: int | None = None
     available_qty: int | None = None
+    cover_image_url: str | None = None
 
     @field_validator("title")
     @classmethod
