@@ -65,6 +65,22 @@ def test_verify_2fa_rejects_bad_code():
     assert verify.status_code == 400
 
 
+def test_login_returns_demo_code_when_email_is_not_configured(monkeypatch):
+    auth.two_factor_service._pending.clear()
+    monkeypatch.setattr(
+        auth.two_factor_service,
+        "send_code_to_email",
+        auth.TwoFactorService.send_code_to_email.__get__(auth.two_factor_service, auth.TwoFactorService),
+    )
+    client.post("/api/auth/register", json=REG_PAYLOAD)
+
+    login = client.post("/api/auth/login", data={"username": REG_PAYLOAD["email"], "password": REG_PAYLOAD["password"]})
+
+    assert login.status_code == 200
+    assert login.json()["requires_2fa"] is True
+    assert len(login.json()["dev_code"]) == 6
+
+
 def test_public_register_rejects_role_field():
     payload = REG_PAYLOAD | {"email": "role_try@example.com", "role": "Administrator"}
     response = client.post("/api/auth/register", json=payload)

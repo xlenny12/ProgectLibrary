@@ -23,6 +23,7 @@ class LoginTwoFactorResponse(BaseModel):
     message: str
     requires_2fa: bool = True
     email: str
+    dev_code: str | None = None
 
 
 class VerifyTwoFactorRequest(BaseModel):
@@ -48,13 +49,14 @@ def login(form: OAuth2PasswordRequestForm = Depends()):
 
     if settings.two_factor_enabled:
         try:
-            two_factor_service.send_code_to_email(user.email, user.id, user.role.value)
+            dev_code = two_factor_service.send_code_to_email(user.email, user.id, user.role.value)
         except TwoFactorEmailError as exc:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
         return LoginTwoFactorResponse(
             message="Verification code sent to email.",
             email=user.email,
+            dev_code=dev_code,
         )
 
     return TokenResponse(
