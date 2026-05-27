@@ -15,6 +15,7 @@ let allBooks = [];
 let currentGenreFilter = "";
 let currentSearchQuery = "";
 let currentBorrowFilter = "active";
+let pendingTwoFactorEmail = "";
 
 const ROLE_LABELS = {
   "Administrator": "Адміністратор",
@@ -165,6 +166,11 @@ function logout() {
 // ========================================
 
 function handleAuthSubmit() {
+  if (pendingTwoFactorEmail) {
+    verifyTwoFactorCode();
+    return;
+  }
+
   const isSignup = document.getElementById("mtab-signup").classList.contains("active");
 
   if (isSignup) {
@@ -229,14 +235,9 @@ async function registerUser() {
       throw new Error(formatApiError(data, "Не вдалося зареєструватися"));
     }
 
-    await signInWithCredentials(email, password);
-    showToast("Акаунт створено. Ви вже увійшли в систему.");
+    showToast("Акаунт створено. Увійдіть, щоб продовжити.");
     clearAuthForm();
-    closeModal();
-    loadBooks();
-    if (canUseStaffPanel()) {
-      loadAdminPanel();
-    }
+    switchTab("login");
   } catch (error) {
     showModalError(error.message);
   } finally {
@@ -257,14 +258,81 @@ async function signInWithCredentials(email, password) {
   }
 
   const data = await res.json();
+  if (data.requires_2fa) {
+    return { requiresTwoFactor: true, email: data.email || email };
+  }
+
+  return finishLogin(data);
+}
+
+async function finishLogin(tokens) {
   const userRes = await fetch(`${API_BASE}/users/me`, {
-    headers: { Authorization: `Bearer ${data.access_token}` },
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
   if (!userRes.ok) throw new Error("Не вдалося завантажити профіль");
   const user = await userRes.json();
 
-  saveUserSession(user, data.access_token, data.refresh_token);
+  saveUserSession(user, tokens.access_token, tokens.refresh_token);
   return user;
+}
+
+function enterTwoFactorStep(email) {
+  pendingTwoFactorEmail = email;
+  document.getElementById("mtab-login").classList.add("active");
+  document.getElementById("mtab-signup").classList.remove("active");
+  document.getElementById("modal-title").textContent = "Двофакторна перевірка";
+  document.getElementById("modal-sub").textContent = `Введіть 6-значний код, надісланий на ${email}.`;
+  document.getElementById("modal-submit-btn").textContent = "Підтвердити код";
+  document.getElementById("m-remember-row").style.display = "none";
+  document.querySelectorAll(".signup-only").forEach((el) => (el.style.display = "none"));
+  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "none"));
+  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "block"));
+  document.getElementById("modal-error").style.display = "none";
+  document.getElementById("field-2fa-code").value = "";
+  document.getElementById("field-2fa-code").focus();
+  showToast("Код підтвердження надіслано на email.");
+}
+
+async function verifyTwoFactorCode() {
+  const code = document.getElementById("field-2fa-code").value.trim();
+
+  if (!code) {
+    showModalError("Вкажіть код підтвердження");
+    return;
+  }
+
+  showModalLoading(true);
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify-2fa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: pendingTwoFactorEmail,
+        code,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(formatApiError(data, "Не вдалося підтвердити код"));
+    }
+
+    const user = await finishLogin(await res.json());
+    pendingTwoFactorEmail = "";
+    closeModal();
+    clearAuthForm();
+    showToast(`Вітаємо, ${user.full_name}!`);
+    loadBooks();
+
+    if (canUseStaffPanel()) {
+      loadAdminPanel();
+    }
+  } catch (error) {
+    showModalError(error.message);
+  } finally {
+    showModalLoading(false);
+  }
 }
 
 async function loginUser() {
@@ -279,7 +347,13 @@ async function loginUser() {
   showModalLoading(true);
 
   try {
-    const user = await signInWithCredentials(email, password);
+    const result = await signInWithCredentials(email, password);
+    if (result.requiresTwoFactor) {
+      enterTwoFactorStep(result.email);
+      return;
+    }
+
+    const user = result;
     closeModal();
     clearAuthForm();
     showToast(`Вітаємо, ${user.full_name}!`);
@@ -1030,6 +1104,11 @@ function updateAuthUI() {
 }
 
 function openModal(type) {
+  pendingTwoFactorEmail = "";
+  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "block"));
+  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "none"));
+  document.getElementById("field-2fa-code").value = "";
+
   if (type === "login") {
     document.getElementById("mtab-login").classList.add("active");
     document.getElementById("mtab-signup").classList.remove("active");
@@ -1053,6 +1132,9 @@ function openModal(type) {
 
 function closeModal() {
   document.getElementById("modal-overlay").style.display = "none";
+  pendingTwoFactorEmail = "";
+  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "block"));
+  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "none"));
   document.getElementById("modal-error").style.display = "none";
 }
 
@@ -1076,6 +1158,7 @@ function clearAuthForm() {
   document.getElementById("field-phone").value = "";
   document.getElementById("field-email").value = "";
   document.getElementById("field-password").value = "";
+  document.getElementById("field-2fa-code").value = "";
   document.getElementById("field-confirm").value = "";
   document.getElementById("modal-error").style.display = "none";
 }
