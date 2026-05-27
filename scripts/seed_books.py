@@ -25,19 +25,19 @@ SAMPLE_BOOKS = [
     ("Fourth Wing", "Rebecca Yarros", BookType.FANTASY, 7, "https://content1.rozetka.com.ua/goods/images/big/424442472.jpg"),
     ("Six of Crows", "Leigh Bardugo", BookType.FANTASY, 4, "https://www.britishbook.ua/upload/resize_cache/iblock/8a8/0v5rbue6dq2a8v3g121esrpfal162xah/1900_800_174b5ed2089e1946312e2a80dcd26f146/knyga_six_of_crows_book_1.jpg"),
     ("The Girl with the Dragon Tattoo", "Stieg Larsson", BookType.CRIMINAL, 5, "https://m.media-amazon.com/images/M/MV5BMTczNDk4NTQ0OV5BMl5BanBnXkFtZTcwNDAxMDgxNw@@._V1_.jpg"),
-    ("A Good Girl's Guide to Murder", "Holly Jackson", BookType.CRIMINAL, 6, "covers/a_good_girl's_guide_to_murder.jpg"),
-    ("The Thursday Murder Club", "Richard Osman", BookType.CRIMINAL, 8, "covers/the_thursday_murder_club.jpg"),
-    ("In Cold Blood", "Truman Capote", BookType.CRIMINAL, 3, "covers/in_cold_blood.jpg"),
-    ("Gone Girl", "Gillian Flynn", BookType.CRIMINAL, 9, "covers/gone_girl.jpg"),
-    ("The Girl on the Train", "Paula Hawkins", BookType.CRIMINAL, 7, "covers/the_girl_on_the_train.jpg"),
-    ("Verity", "Colleen Hoover", BookType.CRIMINAL, 5, "covers/verity.jpg"),
-    ("The Midnight Library", "Matt Haig", BookType.DRAMA, 10, "covers/the_midnight_library.jpg"),
-    ("Lessons in Chemistry", "Bonnie Garmus", BookType.DRAMA, 6, "covers/lessons_in_chemistry.jpg"),
-    ("Tomorrow, and Tomorrow, and Tomorrow", "Gabrielle Zevin", BookType.DRAMA, 4, "covers/tomorrow_and_tomorrow_and_tomorrow.jpg"),
-    ("Happy Place", "Emily Henry", BookType.DRAMA, 5, "covers/happy_place.jpg"),
-    ("Daisy Jones & The Six", "Taylor Jenkins Reid", BookType.DRAMA, 7, "covers/daisy_jones_&_the_six.jpg"),
-    ("The Seven Husbands of Evelyn Hugo", "Taylor Jenkins Reid", BookType.DRAMA, 8, "covers/the_seven_husbands_of_evelyn_hugo.jpg"),
-    ("Carrie", "Stephen King", BookType.DRAMA, 4, "covers/carrie.jpg"),
+    ("A Good Girl's Guide to Murder", "Holly Jackson", BookType.CRIMINAL, 6, "https://static.yakaboo.ua/media/cloudflare/product/webp/600x840/7/1/71pgrehiuhl.jpg"),
+    ("The Thursday Murder Club", "Richard Osman", BookType.CRIMINAL, 8, "https://m.media-amazon.com/images/I/81uHYq+cvkL._AC_UF1000,1000_QL80_.jpg"),
+    ("In Cold Blood", "Truman Capote", BookType.CRIMINAL, 3, "https://m.media-amazon.com/images/I/81Y9w3D1MgL._AC_UF1000,1000_QL80_.jpg"),
+    ("Gone Girl", "Gillian Flynn", BookType.CRIMINAL, 9, "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1636561575i/59586576.jpg"),
+    ("The Girl on the Train", "Paula Hawkins", BookType.CRIMINAL, 7, "https://cdn2.penguin.com.au/covers/original/9781784161750.jpg"),
+    ("Verity", "Colleen Hoover", BookType.CRIMINAL, 5, "https://content1.rozetka.com.ua/goods/images/big/529404217.jpg"),
+    ("The Midnight Library", "Matt Haig", BookType.DRAMA, 10, "https://www.britishbook.ua/upload/resize_cache/iblock/779/kkqglwb74mp1gj7wsoe1mfp12gwtu368/1900_800_174b5ed2089e1946312e2a80dcd26f146/knyga_the_midnight_library.jpg"),
+    ("Lessons in Chemistry", "Bonnie Garmus", BookType.DRAMA, 6, "https://static.yakaboo.ua/media/catalog/product/9/7/9781804993477.jpg"),
+    ("Tomorrow, and Tomorrow, and Tomorrow", "Gabrielle Zevin", BookType.DRAMA, 4, "https://m.media-amazon.com/images/I/81bvjUdRCFL._UF1000,1000_QL80_.jpg"),
+    ("Happy Place", "Emily Henry", BookType.DRAMA, 5, "https://m.media-amazon.com/images/I/71LPMYkB5rL._AC_UF1000,1000_QL80_.jpg"),
+    ("Daisy Jones & The Six", "Taylor Jenkins Reid", BookType.DRAMA, 7, "https://www.britishbook.ua/upload/resize_cache/iblock/296/3omj1863cf8ko3sn42wi80txv8hqw5x3/1900_800_174b5ed2089e1946312e2a80dcd26f146/knyga_daisy_jones_and_the_six.jpg"),
+    ("The Seven Husbands of Evelyn Hugo", "Taylor Jenkins Reid", BookType.DRAMA, 8, "https://img1.od-cdn.com/ImageType-400/0439-1/%7B42631B71-955C-447D-B942-23CD63C897F6%7DIMG400.JPG"),
+    ("Carrie", "Stephen King", BookType.DRAMA, 4, "https://cdn.waterstones.com/bookjackets/large/9781/4447/9781444720693.jpg"),
 ]
 
 
@@ -52,7 +52,7 @@ def seed_books() -> None:
     print(f"Seeding {len(SAMPLE_BOOKS)} books...")
     created_count = 0
     skipped_count = 0
-    for title, author, book_type, total_qty in SAMPLE_BOOKS:
+    for title, author, book_type, total_qty, cover_image_url in SAMPLE_BOOKS:
         key = (title.casefold(), author.casefold(), book_type)
         if key in existing_keys:
             skipped_count += 1
@@ -66,6 +66,7 @@ def seed_books() -> None:
                 book_type=book_type,
                 total_qty=total_qty,
                 available_qty=total_qty,
+                cover_image_url=cover_image_url,
             ),
             actor_id="system",
         )
