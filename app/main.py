@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -6,9 +7,19 @@ from pathlib import Path
 
 from app.core.config import get_settings
 from app.core.logger import get_logger
+from app.core.rate_limit import InMemoryRateLimiter
 from app.routers import auth, users, books, borrows, admin
 
 logger = get_logger(__name__)
+settings = get_settings()
+auth_rate_limiter = InMemoryRateLimiter(
+    limit=settings.auth_rate_limit_requests,
+    window_seconds=settings.auth_rate_limit_window_seconds,
+)
+AUTH_RATE_LIMITED_PATHS = {
+    ("POST", "/api/auth/login"),
+    ("POST", "/api/auth/register"),
+}
 
 
 def create_scheduler():
@@ -96,6 +107,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def limit_auth_requests(request: Request, call_next):
+    route_key = (request.method.upper(), request.url.path)
+    if route_key in AUTH_RATE_LIMITED_PATHS:
+        forwarded_for = request.headers.get("x-forwarded-for", "")
+        client_ip = forwarded_for.split(",", 1)[0].strip()
+        if not client_ip and request.client:
+            client_ip = request.client.host
+
+        key = f"{client_ip or 'unknown'}:{route_key[0]}:{route_key[1]}"
+        allowed, retry_after = auth_rate_limiter.is_allowed(key)
+        if not allowed:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many authentication requests. Please try again later."},
+                headers={"Retry-After": str(retry_after)},
+            )
+
+    return await call_next(request)
+
 
 app.include_router(auth.router)
 app.include_router(users.router)
