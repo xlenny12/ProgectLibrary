@@ -170,8 +170,14 @@
       </div>
       <div class="m-row" id="m-remember-row">
         <label class="m-remember"><input type="checkbox" id="field-remember" /> Запам'ятати мене</label>
+        <button type="button" class="m-link-btn" onclick="showToast('Відновлення пароля буде додано пізніше')">Забули пароль?</button>
       </div>
       <button class="btn-modal-submit" id="modal-submit-btn" onclick="handleAuthSubmit()">Увійти</button>
+      <div class="m-divider"><span>або</span></div>
+      <button class="m-google-btn" type="button" onclick="showToast('Реєстрація через Google буде додана пізніше')">
+        <span class="google-mark" aria-hidden="true">G</span>
+        Зареєструватись з Google
+      </button>
       <div id="modal-loading" class="modal-loading" style="display:none">
         <div class="loading-spinner small"></div>
         <span>Зачекайте...</span>

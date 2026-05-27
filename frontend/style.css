@@ -791,10 +791,70 @@ footer {
   font-size: 0.9rem;
 }
 
+.m-link-btn {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .btn-modal-submit {
   width: 100%;
   min-height: 44px;
   padding: 0.7rem 1rem;
+}
+
+.m-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.9rem 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.m-divider::before,
+.m-divider::after {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+.m-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #b8c6c0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.m-google-btn:hover {
+  border-color: var(--primary);
+  background: var(--surface-soft);
+}
+
+.google-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: #4285f4;
+  font-weight: 900;
 }
 
 .signup-only {
