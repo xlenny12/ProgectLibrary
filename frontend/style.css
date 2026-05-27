@@ -809,8 +809,7 @@ footer {
   padding: 0.7rem 1rem;
 }
 
-.signup-only,
-.twofa-only {
+.signup-only {
   display: none;
 }
 

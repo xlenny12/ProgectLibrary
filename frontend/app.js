@@ -15,7 +15,6 @@ let allBooks = [];
 let currentGenreFilter = "";
 let currentSearchQuery = "";
 let currentBorrowFilter = "active";
-let pendingTwoFactorEmail = "";
 
 const ROLE_LABELS = {
   "Administrator": "Адміністратор",
@@ -213,11 +212,6 @@ async function fetchWithAuth(url, options = {}, retry = true) {
 // ========================================
 
 function handleAuthSubmit() {
-  if (pendingTwoFactorEmail) {
-    verifyTwoFactorCode();
-    return;
-  }
-
   const isSignup = document.getElementById("mtab-signup").classList.contains("active");
 
   if (isSignup) {
@@ -304,12 +298,7 @@ async function signInWithCredentials(email, password) {
     throw new Error(formatApiError(data, "Не вдалося увійти"));
   }
 
-  const data = await res.json();
-  if (data.requires_2fa) {
-    return { requiresTwoFactor: true, email: data.email || email, devCode: data.dev_code };
-  }
-
-  return finishLogin(data);
+  return finishLogin(await res.json());
 }
 
 async function finishLogin(tokens) {
@@ -321,67 +310,6 @@ async function finishLogin(tokens) {
 
   saveUserSession(user, tokens.access_token, tokens.refresh_token);
   return user;
-}
-
-function enterTwoFactorStep(email, devCode) {
-  pendingTwoFactorEmail = email;
-  document.getElementById("mtab-login").classList.add("active");
-  document.getElementById("mtab-signup").classList.remove("active");
-  document.getElementById("modal-title").textContent = "Двофакторна перевірка";
-  document.getElementById("modal-sub").textContent = devCode
-    ? `Демо-код для входу: ${devCode}`
-    : `Введіть 6-значний код, надісланий на ${email}.`;
-  document.getElementById("modal-submit-btn").textContent = "Підтвердити код";
-  document.getElementById("m-remember-row").style.display = "none";
-  document.querySelectorAll(".signup-only").forEach((el) => (el.style.display = "none"));
-  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "none"));
-  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "block"));
-  document.getElementById("modal-error").style.display = "none";
-  document.getElementById("field-2fa-code").value = "";
-  document.getElementById("field-2fa-code").focus();
-  showToast("Код підтвердження надіслано на email.");
-}
-
-async function verifyTwoFactorCode() {
-  const code = document.getElementById("field-2fa-code").value.trim();
-
-  if (!code) {
-    showModalError("Вкажіть код підтвердження");
-    return;
-  }
-
-  showModalLoading(true);
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/verify-2fa`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: pendingTwoFactorEmail,
-        code,
-      }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(formatApiError(data, "Не вдалося підтвердити код"));
-    }
-
-    const user = await finishLogin(await res.json());
-    pendingTwoFactorEmail = "";
-    closeModal();
-    clearAuthForm();
-    showToast(`Вітаємо, ${user.full_name}!`);
-    loadBooks();
-
-    if (canUseStaffPanel()) {
-      loadAdminPanel();
-    }
-  } catch (error) {
-    showModalError(error.message);
-  } finally {
-    showModalLoading(false);
-  }
 }
 
 async function loginUser() {
@@ -396,13 +324,7 @@ async function loginUser() {
   showModalLoading(true);
 
   try {
-    const result = await signInWithCredentials(email, password);
-    if (result.requiresTwoFactor) {
-      enterTwoFactorStep(result.email, result.devCode);
-      return;
-    }
-
-    const user = result;
+    const user = await signInWithCredentials(email, password);
     closeModal();
     clearAuthForm();
     showToast(`Вітаємо, ${user.full_name}!`);
@@ -1150,11 +1072,6 @@ function updateAuthUI() {
 }
 
 function openModal(type) {
-  pendingTwoFactorEmail = "";
-  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "block"));
-  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "none"));
-  document.getElementById("field-2fa-code").value = "";
-
   if (type === "login") {
     document.getElementById("mtab-login").classList.add("active");
     document.getElementById("mtab-signup").classList.remove("active");
@@ -1178,9 +1095,6 @@ function openModal(type) {
 
 function closeModal() {
   document.getElementById("modal-overlay").style.display = "none";
-  pendingTwoFactorEmail = "";
-  document.querySelectorAll(".auth-credential-field").forEach((el) => (el.style.display = "block"));
-  document.querySelectorAll(".twofa-only").forEach((el) => (el.style.display = "none"));
   document.getElementById("modal-error").style.display = "none";
 }
 
@@ -1204,7 +1118,6 @@ function clearAuthForm() {
   document.getElementById("field-phone").value = "";
   document.getElementById("field-email").value = "";
   document.getElementById("field-password").value = "";
-  document.getElementById("field-2fa-code").value = "";
   document.getElementById("field-confirm").value = "";
   document.getElementById("modal-error").style.display = "none";
 }
