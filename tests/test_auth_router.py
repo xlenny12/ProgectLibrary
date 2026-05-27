@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
-
 import pytest
 from fastapi.testclient import TestClient
 
-from app.routers import auth
 from app.main import app
 from app.models.user import Role, UserCreate
+from app.routers import auth
 from app.services.user_service import UserService
 
 client = TestClient(app)
@@ -20,17 +18,16 @@ REG_PAYLOAD = {
 }
 
 
+def _fake_send_code(email: str, user_id: str, role: str) -> None:
+    auth.two_factor_service._store_code(email, "123456", user_id, role)
+
+
 @pytest.fixture(autouse=True)
 def fake_two_factor_email(monkeypatch):
-    def fake_send_code(email: str, user_id: str, role: str) -> None:
-        auth.two_factor_service.codes[email] = {
-            "code": "123456",
-            "user_id": user_id,
-            "role": role,
-            "expires_at": datetime.utcnow() + timedelta(minutes=5),
-        }
-
-    monkeypatch.setattr(auth.two_factor_service, "send_code_to_email", fake_send_code)
+    auth.two_factor_service._pending.clear()
+    monkeypatch.setattr(auth.two_factor_service, "send_code_to_email", _fake_send_code)
+    yield
+    auth.two_factor_service._pending.clear()
 
 
 def _login(email: str, password: str) -> str:
@@ -57,6 +54,31 @@ def test_register_and_login():
     verify = client.post("/api/auth/verify-2fa", json={"email": REG_PAYLOAD["email"], "code": "123456"})
     assert verify.status_code == 200
     assert "access_token" in verify.json()
+
+
+def test_verify_2fa_rejects_bad_code():
+    client.post("/api/auth/register", json=REG_PAYLOAD)
+    login = client.post("/api/auth/login", data={"username": REG_PAYLOAD["email"], "password": REG_PAYLOAD["password"]})
+    assert login.status_code == 200
+
+    verify = client.post("/api/auth/verify-2fa", json={"email": REG_PAYLOAD["email"], "code": "000000"})
+    assert verify.status_code == 400
+
+
+def test_login_returns_demo_code_when_email_is_not_configured(monkeypatch):
+    auth.two_factor_service._pending.clear()
+    monkeypatch.setattr(
+        auth.two_factor_service,
+        "send_code_to_email",
+        auth.TwoFactorService.send_code_to_email.__get__(auth.two_factor_service, auth.TwoFactorService),
+    )
+    client.post("/api/auth/register", json=REG_PAYLOAD)
+
+    login = client.post("/api/auth/login", data={"username": REG_PAYLOAD["email"], "password": REG_PAYLOAD["password"]})
+
+    assert login.status_code == 200
+    assert login.json()["requires_2fa"] is True
+    assert len(login.json()["dev_code"]) == 6
 
 
 def test_public_register_rejects_role_field():
