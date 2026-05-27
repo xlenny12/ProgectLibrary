@@ -189,6 +189,7 @@ footer small { font-size: 0.8rem; }
 .m-social-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.7rem; border: 1.5px solid rgba(94,120,146,0.25); border-radius: 10px; background: white; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--text-dark); cursor: pointer; transition: all 0.2s; }
 .m-social-btn:hover { border-color: var(--blue-dark); background: rgba(94,120,146,0.05); }
 .signup-only { display: none; }
+.twofa-only { display: none; }
 
 /* ANIMATION */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }

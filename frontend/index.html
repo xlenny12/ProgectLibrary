@@ -189,6 +189,18 @@
           <label data-i18n="modal.fullName">Full Name</label>
           <input type="text" name="full_name" data-i18n-placeholder="modal.fullNamePlaceholder" placeholder="Jane Austen" autocomplete="name" />
         </div>
+        <div class="m-field signup-only">
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" autocomplete="bday" />
+        </div>
+        <div class="m-field signup-only">
+          <label>Address</label>
+          <input type="text" name="address" placeholder="Kyiv, Main St 1" autocomplete="street-address" />
+        </div>
+        <div class="m-field signup-only">
+          <label>Phone</label>
+          <input type="tel" name="phone" placeholder="+380991112233" autocomplete="tel" />
+        </div>
         <div class="m-field">
           <label data-i18n="modal.email">Email Address</label>
           <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required />
@@ -196,6 +208,10 @@
         <div class="m-field">
           <label data-i18n="modal.password">Password</label>
           <input type="password" name="password" data-i18n-placeholder="modal.passwordPlaceholder" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <div class="m-field twofa-only" id="mf-2fa">
+          <label>Verification Code</label>
+          <input type="text" name="code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code" />
         </div>
         <div class="m-field signup-only" id="mf-confirm">
           <label data-i18n="modal.confirmPassword">Confirm Password</label>
@@ -396,7 +412,13 @@
 
     // ── Global State ────────────────────────────────────────────────────────
     let currentMode = 'login';
-    const API_BASE  = 'http://127.0.0.1:8000';
+    const API_BASE =
+      window.location.protocol === 'file:'
+        ? 'http://127.0.0.1:8000/api'
+        : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+        : `${window.location.origin}/api`;
+    let pendingTwoFactorEmail = '';
 
     // ── Feedback Banner ─────────────────────────────────────────────────────
     function showFeedback(message, type) {
@@ -420,6 +442,7 @@
       document.getElementById('modal-overlay').classList.remove('open');
       document.body.style.overflow = '';
       document.getElementById('auth-form').reset();
+      pendingTwoFactorEmail = '';
       clearFeedback();
     }
     function handleOverlayClick(e) {
@@ -431,6 +454,7 @@
     function switchTab(mode) {
       currentMode = (mode === 'signup') ? 'register' : mode;
       const isRegister = currentMode === 'register';
+      pendingTwoFactorEmail = '';
 
       document.getElementById('mtab-login').classList.toggle('active', !isRegister);
       document.getElementById('mtab-signup').classList.toggle('active',  isRegister);
@@ -447,7 +471,53 @@
       document.querySelectorAll('.signup-only').forEach(el => {
         el.style.display = isRegister ? 'block' : 'none';
       });
+      document.querySelectorAll('.twofa-only').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('#auth-form input[name="email"], #auth-form input[name="password"]').forEach(el => {
+        el.closest('.m-field').style.display = 'block';
+      });
       clearFeedback();
+    }
+
+    function enterTwoFactorStep(email) {
+      currentMode = '2fa';
+      pendingTwoFactorEmail = email;
+      document.getElementById('modal-title').textContent = 'Two-factor authentication';
+      document.getElementById('modal-sub').textContent = `Enter the 6-digit code sent to ${email}.`;
+      document.getElementById('modal-submit-btn').textContent = 'Verify Code';
+      document.getElementById('m-remember-row').style.display = 'none';
+      document.querySelectorAll('.signup-only').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('.twofa-only').forEach(el => {
+        el.style.display = 'block';
+      });
+      document.querySelectorAll('#auth-form input[name="email"], #auth-form input[name="password"]').forEach(el => {
+        el.closest('.m-field').style.display = 'none';
+      });
+      document.querySelector('#auth-form input[name="code"]').value = '';
+      document.querySelector('#auth-form input[name="code"]').focus();
+      showFeedback('Verification code sent to your email.', 'success');
+    }
+
+    async function finishLogin(tokens) {
+      const profileResponse = await fetch(`${API_BASE}/users/me`, {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      });
+      const profile = await profileResponse.json();
+      if (!profileResponse.ok) {
+        throw new Error(profile.detail ?? 'Could not load profile.');
+      }
+
+      localStorage.setItem(
+        'readlySession',
+        JSON.stringify({
+          user: profile,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+        })
+      );
     }
 
     // ── Form Submission ─────────────────────────────────────────────────────
@@ -467,31 +537,55 @@
         }
       }
 
-      const payload = { email, password };
-      if (currentMode === 'register') payload.full_name = form.full_name.value.trim();
-
-      const endpoint = currentMode === 'register'
-        ? `${API_BASE}/register`
-        : `${API_BASE}/login`;
-
       const submitBtn = document.getElementById('modal-submit-btn');
       submitBtn.disabled = true;
       submitBtn.textContent = t('modal.wait');
 
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        let response;
+        if (currentMode === 'register') {
+          response = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              full_name: form.full_name.value.trim(),
+              date_of_birth: form.date_of_birth.value,
+              address: form.address.value.trim(),
+              phone: form.phone.value.trim(),
+              email,
+              password,
+            }),
+          });
+        } else if (currentMode === '2fa') {
+          response = await fetch(`${API_BASE}/auth/verify-2fa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: pendingTwoFactorEmail,
+              code: form.code.value.trim(),
+            }),
+          });
+        } else {
+          response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ username: email, password }),
+          });
+        }
+
         const data = await response.json();
 
         if (response.ok) {
-          const message = currentMode === 'register'
-            ? `${t('modal.createTitle')}! ${data.full_name ?? email}.`
-            : `${t('modal.welcomeBack')}! ${data.email ?? email}.`;
-          showFeedback(message, 'success');
-          setTimeout(closeModal, 1800);
+          if (currentMode === 'register') {
+            showFeedback('Account created. Please sign in.', 'success');
+            setTimeout(() => switchTab('login'), 900);
+          } else if (currentMode === '2fa') {
+            await finishLogin(data);
+            showFeedback('Signed in successfully.', 'success');
+            setTimeout(() => window.location.reload(), 700);
+          } else {
+            enterTwoFactorStep(data.email ?? email);
+          }
         } else {
           const errorMessage = data.detail ?? data.message ?? 'Something went wrong.';
           showFeedback(`Error: ${errorMessage}`, 'error');
@@ -501,7 +595,10 @@
         showFeedback(t('modal.networkError'), 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === 'register' ? t('modal.createAccount') : t('modal.signIn');
+        submitBtn.textContent =
+          currentMode === 'register' ? t('modal.createAccount') :
+          currentMode === '2fa' ? 'Verify Code' :
+          t('modal.signIn');
       }
     });
   </script>
@@ -568,6 +665,5 @@
     }
   </script>
 
-  <script src="app.js"></script>
 </body>
 </html>
