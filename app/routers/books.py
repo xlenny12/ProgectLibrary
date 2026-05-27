@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.dependencies import require_role
-from app.models.book import BookCreate, BookPublic, BookUpdate
+from app.models.book import BookCreate, BookPublic, BookType, BookUpdate
 from app.models.user import UserInDB, Role
 from app.services.book_service import BookService
 
@@ -80,3 +80,12 @@ def delete_book(book_id: str, current_user: UserInDB = Depends(require_role(Role
         BookService().delete(book_id, actor_id=current_user.id)
     except ValueError as e:
         raise HTTPException(404, str(e))
+    
+# У вашому app/models/book.py
+class BookCreate(BaseModel):
+    title: str
+    author: str
+    book_type: BookType
+    total_qty: int
+    available_qty: int
+    cover_image_url: str | None = None  # Додайте це поле
