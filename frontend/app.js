@@ -347,9 +347,13 @@ function renderBooksGrid(books) {
     const card = document.createElement("div");
     card.className = "book-card";
     card.innerHTML = `
-      <div class="book-cover" style="background: ${coverColor(book, index)};">
-        <div class="book-cover-title">${escapeHtml(book.title)}</div>
-      </div>
+      <div class="book-cover ${book.cover_image_url ? "has-image" : ""}" style="${book.cover_image_url ? "" : `background: ${coverColor(book, index)};`}">
+  ${
+    book.cover_image_url
+      ? `<img class="book-cover-img" src="${escapeHtml(book.cover_image_url)}" alt="${escapeHtml(book.title)} cover" loading="lazy">`
+      : `<div class="book-cover-title">${escapeHtml(book.title)}</div>`
+  }
+</div>
       <div class="book-title">${escapeHtml(book.title)}</div>
       <div class="book-author">${escapeHtml(book.author)}</div>
       <div class="book-meta">
