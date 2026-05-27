@@ -13,9 +13,6 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
-    two_factor_enabled: bool = True
-    two_factor_code_ttl_minutes: int = 5
-    two_factor_max_attempts: int = 5
 
     # Storage
     data_dir: Path = Path("./data")
@@ -48,8 +45,6 @@ class Settings(BaseSettings):
             raise RuntimeError("FERNET_KEY must be configured in production.")
         if not self.audit_hmac_key or len(self.audit_hmac_key) < 32:
             raise RuntimeError("AUDIT_HMAC_KEY must be a unique 32+ character secret in production.")
-        if self.two_factor_enabled and not all([self.smtp_user, self.smtp_password]):
-            raise RuntimeError("SMTP_USER and SMTP_PASSWORD must be configured when 2FA is enabled in production.")
 
 
 @lru_cache
