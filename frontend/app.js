@@ -160,6 +160,53 @@ function logout() {
   showToast("Ви вийшли з акаунта");
 }
 
+async function refreshAccessToken() {
+  if (!refreshToken) return false;
+
+  const res = await fetch(`${API_BASE}/auth/refresh?refresh_token=${encodeURIComponent(refreshToken)}`, {
+    method: "POST",
+  });
+
+  if (!res.ok) return false;
+
+  const tokens = await res.json();
+  currentToken = tokens.access_token;
+  refreshToken = tokens.refresh_token;
+  localStorage.setItem(
+    "readlySession",
+    JSON.stringify({ user: currentUser, access_token: currentToken, refresh_token: refreshToken })
+  );
+  return true;
+}
+
+async function fetchWithAuth(url, options = {}, retry = true) {
+  if (!currentToken) {
+    throw new Error("Увійдіть у систему ще раз");
+  }
+
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${currentToken}`,
+  };
+
+  const response = await fetch(url, { ...options, headers });
+  if (response.status !== 401 || !retry) {
+    return response;
+  }
+
+  const refreshed = await refreshAccessToken();
+  if (!refreshed) {
+    currentUser = null;
+    currentToken = null;
+    refreshToken = null;
+    localStorage.removeItem("readlySession");
+    updateAuthUI();
+    throw new Error("Сесію завершено. Увійдіть знову.");
+  }
+
+  return fetchWithAuth(url, options, false);
+}
+
 // ========================================
 // AUTH - REGISTER & LOGIN
 // ========================================
@@ -229,14 +276,9 @@ async function registerUser() {
       throw new Error(formatApiError(data, "Не вдалося зареєструватися"));
     }
 
-    await signInWithCredentials(email, password);
-    showToast("Акаунт створено. Ви вже увійшли в систему.");
+    showToast("Акаунт створено. Увійдіть, щоб продовжити.");
     clearAuthForm();
-    closeModal();
-    loadBooks();
-    if (canUseStaffPanel()) {
-      loadAdminPanel();
-    }
+    switchTab("login");
   } catch (error) {
     showModalError(error.message);
   } finally {
@@ -256,14 +298,17 @@ async function signInWithCredentials(email, password) {
     throw new Error(formatApiError(data, "Не вдалося увійти"));
   }
 
-  const data = await res.json();
-  const userRes = await fetch(`${API_BASE}/users/me`, {
-    headers: { Authorization: `Bearer ${data.access_token}` },
-  });
+  return finishLogin(await res.json());
+}
+
+async function finishLogin(tokens) {
+  currentToken = tokens.access_token;
+  refreshToken = tokens.refresh_token;
+  const userRes = await fetchWithAuth(`${API_BASE}/users/me`);
   if (!userRes.ok) throw new Error("Не вдалося завантажити профіль");
   const user = await userRes.json();
 
-  saveUserSession(user, data.access_token, data.refresh_token);
+  saveUserSession(user, tokens.access_token, tokens.refresh_token);
   return user;
 }
 
@@ -418,11 +463,10 @@ async function submitBorrow() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/borrows`, {
+    const res = await fetchWithAuth(`${API_BASE}/borrows`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${currentToken}`,
       },
       body: JSON.stringify({
         book_id: currentBorrowBook,
@@ -451,9 +495,7 @@ async function loadUserBorrows() {
   try {
     await ensureBooksLoaded();
 
-    const res = await fetch(`${API_BASE}/borrows/me`, {
-      headers: { Authorization: `Bearer ${currentToken}` },
-    });
+    const res = await fetchWithAuth(`${API_BASE}/borrows/me`);
 
     if (!res.ok) throw new Error("Не вдалося завантажити список книг");
 

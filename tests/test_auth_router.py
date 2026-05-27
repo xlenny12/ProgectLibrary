@@ -15,7 +15,6 @@ REG_PAYLOAD = {
     "password": "Secure456",
 }
 
-
 def _login(email: str, password: str) -> str:
     response = client.post("/api/auth/login", data={"username": email, "password": password})
     assert response.status_code == 200

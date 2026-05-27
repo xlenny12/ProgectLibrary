@@ -237,6 +237,15 @@ nav {
   min-height: 320px;
 }
 
+.hero-visual img {
+  display: block;
+  width: min(100%, 420px);
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
 .hero-book {
   width: 88px;
   border-radius: 6px 14px 14px 6px;

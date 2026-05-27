@@ -23,6 +23,8 @@ def tmp_data_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("AUDIT_HMAC_KEY", "test-hmac-key-32-chars-long-minimum-")
     monkeypatch.setenv("SECRET_KEY", "test-secret-key-not-for-production---")
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("SMTP_USER", "")
+    monkeypatch.setenv("SMTP_PASSWORD", "")
 
     # Clear lru_cache so Settings re-reads env vars
     from app.core.config import get_settings
@@ -31,4 +33,3 @@ def tmp_data_dir(tmp_path, monkeypatch):
     yield tmp_path
 
     get_settings.cache_clear()
-
