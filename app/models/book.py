@@ -1,5 +1,5 @@
 from enum import Enum
-
+from pydantic import HttpUrl
 from pydantic import BaseModel, field_validator, model_validator
 
 
